@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MB Menu Tools</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:#0f0f0f; --bg2:#1a1a1a; --bg3:#242424; --bg4:#2e2e2e;
+  --text:#f0f0ee; --text2:#a0a09d; --text3:#6b6b68;
+  --accent:#e8a838; --accent2:#c48a1e;
+  --green:#5aaa6a; --red:#e05555; --blue:#5b9bd5; --amber:#e8a838;
+  --border:rgba(255,255,255,0.08); --border2:rgba(255,255,255,0.14);
+  --r:10px; --pill:20px;
+}
+body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; font-size:14px; line-height:1.6; }
+
+.header { border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; gap:1rem; height:56px; }
+.logo { font-size:15px; font-weight:600; color:var(--accent); letter-spacing:-0.01em; }
+.logo span { color:var(--text2); font-weight:400; }
+
+.nav { display:flex; gap:2px; padding:1.5rem 2rem 0; }
+.nav-tab { padding:8px 18px; font-size:13px; font-weight:500; border-radius:var(--r) var(--r) 0 0; border:1px solid transparent; cursor:pointer; background:transparent; color:var(--text2); transition:all .15s; font-family:inherit; }
+.nav-tab:hover { color:var(--text); }
+.nav-tab.active { background:var(--bg2); color:var(--text); border-color:var(--border2); border-bottom-color:var(--bg2); }
+
+.main { padding:0 2rem 4rem; max-width:900px; }
+.panel { display:none; background:var(--bg2); border:1px solid var(--border2); border-radius:0 var(--r) var(--r) var(--r); padding:2rem; }
+.panel.active { display:block; }
+.panel-title { font-size:18px; font-weight:600; margin-bottom:6px; }
+.panel-desc { font-size:13px; color:var(--text2); margin-bottom:1.75rem; }
+
+.upload-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.25rem; }
+.upload-zone { border:1.5px dashed var(--border2); border-radius:var(--r); padding:1.5rem; text-align:center; cursor:pointer; transition:all .15s; position:relative; }
+.upload-zone:hover, .upload-zone.dragover { border-color:var(--accent); background:rgba(232,168,56,.06); }
+.upload-zone.has-file { border-color:var(--green); border-style:solid; background:rgba(90,170,106,.06); }
+.upload-zone input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+.upload-icon { font-size:24px; margin-bottom:6px; }
+.upload-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--text3); margin-bottom:4px; }
+.upload-hint { font-size:12px; color:var(--text3); }
+.upload-filename { font-size:12px; font-weight:500; color:var(--green); margin-top:4px; word-break:break-all; }
+
+.checkbox-row { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text2); margin-bottom:1.25rem; }
+.checkbox-row input { accent-color:var(--accent); width:14px; height:14px; }
+
+.run-btn { background:var(--accent); color:#000; border:none; border-radius:var(--r); padding:10px 24px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit; transition:background .15s; }
+.run-btn:hover { background:var(--accent2); }
+.run-btn:disabled { opacity:.4; cursor:not-allowed; }
+.spinner { display:none; margin-left:10px; font-size:13px; color:var(--text3); }
+.spinner.running { display:inline; }
+
+.results { margin-top:2rem; }
+.result-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:1.5rem; }
+.stat-card { background:var(--bg3); border-radius:var(--r); padding:12px 14px; border:1px solid var(--border); }
+.stat-card-label { font-size:11px; color:var(--text2); margin-bottom:3px; }
+.stat-card-val { font-size:22px; font-weight:600; }
+
+.section { margin-bottom:1.5rem; }
+.section-hdr { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.07em; color:var(--text3); border-bottom:1px solid var(--border); padding-bottom:7px; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+.section-cnt { font-weight:400; background:var(--bg4); border-radius:var(--pill); padding:1px 8px; font-size:11px; }
+
+.item-row { padding:8px 10px; border-bottom:1px solid var(--border); font-size:13px; }
+.item-row:last-child { border-bottom:none; }
+.item-row.expandable { cursor:pointer; }
+.item-row.expandable:hover { background:var(--bg3); border-radius:6px; }
+.item-head { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+.item-name { font-weight:500; }
+.item-group { font-size:11px; color:var(--text3); }
+.item-price { font-size:12px; color:var(--text2); margin-left:auto; }
+.expand-toggle { font-size:11px; color:var(--text3); margin-left:auto; flex-shrink:0; }
+
+.badge { font-size:10px; font-weight:600; padding:2px 7px; border-radius:var(--pill); white-space:nowrap; flex-shrink:0; }
+.b-add  { background:rgba(90,170,106,.15);  color:var(--green); }
+.b-remove { background:rgba(224,85,85,.15); color:var(--red); }
+.b-fix  { background:rgba(232,168,56,.15);  color:var(--amber); }
+.b-guid { background:rgba(91,155,213,.15);  color:var(--blue); }
+.b-req  { color:var(--red);   font-size:10px; font-weight:600; }
+.b-opt  { color:var(--green); font-size:10px; font-weight:600; }
+
+.item-detail { display:none; padding-top:8px; }
+.item-detail.open { display:block; }
+.mg-row { background:rgba(232,168,56,.07); border-radius:6px; padding:6px 10px; margin:4px 0; font-size:12px; }
+.mg-name { font-weight:600; color:var(--amber); display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.mg-opts { margin-top:4px; display:flex; flex-wrap:wrap; gap:4px; }
+.opt-pill { font-size:11px; background:var(--bg4); border-radius:4px; padding:2px 7px; color:var(--text2); }
+.diff-list { margin-top:4px; }
+.diff-item { font-size:12px; color:var(--text2); padding:2px 0 2px 12px; position:relative; }
+.diff-item::before { content:'•'; position:absolute; left:2px; color:var(--text3); }
+
+.meta-bar { background:var(--bg3); border-radius:var(--r); padding:10px 14px; font-size:12px; color:var(--text2); margin-bottom:1.25rem; display:flex; gap:2rem; flex-wrap:wrap; }
+.meta-bar strong { color:var(--text); }
+.empty { text-align:center; padding:1.5rem; color:var(--text3); font-size:13px; }
+.error-msg { background:rgba(224,85,85,.1); border:1px solid rgba(224,85,85,.3); border-radius:var(--r); padding:12px 16px; color:var(--red); font-size:13px; margin-top:1rem; }
+
+/* checklist */
+.checklist-item { display:grid; grid-template-columns:18px 1fr auto; gap:10px; align-items:start; padding:9px 8px; border-bottom:1px solid var(--border); cursor:pointer; border-radius:6px; transition:background .1s; }
+.checklist-item:last-child { border-bottom:none; }
+.checklist-item:hover { background:var(--bg3); }
+.checklist-item.done .ci-name { text-decoration:line-through; color:var(--text3); }
+.checklist-item.done .ci-sub { color:var(--text3); }
+.checklist-item input[type=checkbox] { width:14px; height:14px; margin-top:3px; accent-color:var(--green); cursor:pointer; flex-shrink:0; }
+.ci-name { font-size:13px; font-weight:500; line-height:1.4; }
+.ci-sub { font-size:12px; color:var(--text2); margin-top:2px; line-height:1.5; }
+.progress-bar-wrap { margin-bottom:1.5rem; }
+.progress-info { display:flex; justify-content:space-between; font-size:12px; color:var(--text2); margin-bottom:6px; }
+.progress-bar { height:5px; background:var(--border2); border-radius:3px; overflow:hidden; }
+.progress-fill { height:100%; background:var(--green); border-radius:3px; transition:width .2s; }
+.filter-row { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:1rem; align-items:center; }
+.f-btn { padding:4px 11px; font-size:12px; border-radius:var(--pill); border:1px solid var(--border2); background:transparent; color:var(--text2); cursor:pointer; font-family:inherit; transition:all .12s; }
+.f-btn:hover { color:var(--text); }
+.f-btn.on { background:var(--bg3); color:var(--text); font-weight:500; }
+.reset-btn { font-size:11px; color:var(--text3); background:none; border:none; cursor:pointer; text-decoration:underline; font-family:inherit; margin-left:auto; }
+
+@media(max-width:600px){
+  .upload-row { grid-template-columns:1fr; }
+  .result-stats { grid-template-columns:repeat(2,1fr); }
+  .main,.header { padding-left:1rem; padding-right:1rem; }
+  .nav { padding-left:1rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">MB Menu Tools <span>/ Presto</span></div>
+</div>
+
+<div class="nav">
+  <button class="nav-tab active" onclick="switchTab('diff',this)">Menu Diff</button>
+  <button class="nav-tab" onclick="switchTab('sync',this)">Sync Checklist</button>
+</div>
+
+<div class="main">
+
+  <!-- DIFF -->
+  <div class="panel active" id="panel-diff">
+    <div class="panel-title">Menu Diff</div>
+    <div class="panel-desc">Compare two Toast menu exports — see items added, removed, and modifier changes.</div>
+    <div class="upload-row">
+      <div class="upload-zone" id="zone-d1">
+        <input type="file" accept=".json" onchange="fileSelected(this,'zone-d1','dname1')">
+        <div class="upload-icon">📄</div>
+        <div class="upload-label">File 1 (older)</div>
+        <div class="upload-hint">Click or drag & drop</div>
+        <div class="upload-filename" id="dname1"></div>
+      </div>
+      <div class="upload-zone" id="zone-d2">
+        <input type="file" accept=".json" onchange="fileSelected(this,'zone-d2','dname2')">
+        <div class="upload-icon">📄</div>
+        <div class="upload-label">File 2 (newer)</div>
+        <div class="upload-hint">Click or drag & drop</div>
+        <div class="upload-filename" id="dname2"></div>
+      </div>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="sandbox2-check">
+      <label for="sandbox2-check">File 2 is a Sandbox export (uses MB Menu GUID)</label>
+    </div>
+    <button class="run-btn" onclick="runDiff()">Run Diff</button>
+    <span class="spinner" id="diff-spin">Comparing…</span>
+    <div id="diff-err"></div>
+    <div class="results" id="diff-out"></div>
+  </div>
+
+  <!-- SYNC -->
+  <div class="panel" id="panel-sync">
+    <div class="panel-title">Sync Checklist</div>
+    <div class="panel-desc">Upload Lansdale and Sandbox exports — get a checklist of everything needed to bring Sandbox in line with Lansdale.</div>
+    <div class="upload-row">
+      <div class="upload-zone" id="zone-l">
+        <input type="file" accept=".json" onchange="fileSelected(this,'zone-l','lname')">
+        <div class="upload-icon">🏪</div>
+        <div class="upload-label">Lansdale (source of truth)</div>
+        <div class="upload-hint">Click or drag & drop</div>
+        <div class="upload-filename" id="lname"></div>
+      </div>
+      <div class="upload-zone" id="zone-s">
+        <input type="file" accept=".json" onchange="fileSelected(this,'zone-s','sname')">
+        <div class="upload-icon">🧪</div>
+        <div class="upload-label">Sandbox (target)</div>
+        <div class="upload-hint">Click or drag & drop</div>
+        <div class="upload-filename" id="sname"></div>
+      </div>
+    </div>
+    <button class="run-btn" onclick="runSync()">Generate Checklist</button>
+    <span class="spinner" id="sync-spin">Building checklist…</span>
+    <div id="sync-err"></div>
+    <div class="results" id="sync-out"></div>
+  </div>
+
+</div>
+
+<script>
+// ── Constants ──────────────────────────────────────────────────────────────
+const SANDBOX_GUID = 'f9499d31-2ba6-4a37-82bf-0b46a8f33ea9';
+
+// ── File store ─────────────────────────────────────────────────────────────
+const files = {};
+
+function fileSelected(input, zoneId, nameId) {
+  const file = input.files[0];
+  if (!file) return;
+  files[zoneId] = file;
+  document.getElementById(nameId).textContent = file.name;
+  document.getElementById(zoneId).classList.add('has-file');
+}
+
+function readJSON(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = e => { try { res(JSON.parse(e.target.result)); } catch(err) { rej(err); } };
+    r.onerror = rej;
+    r.readAsText(file);
+  });
+}
+
+// ── Tab switching ──────────────────────────────────────────────────────────
+function switchTab(tab, btn) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-' + tab).classList.add('active');
+}
+
+// ── Menu parsing ───────────────────────────────────────────────────────────
+function getOwnerMenu(data) {
+  return data.menus?.find(m => m.name?.includes('Owner')) || null;
+}
+function getMBMenu(data) {
+  return data.menus?.find(m => m.guid === SANDBOX_GUID) || null;
+}
+function getMenu(data, isSandbox) {
+  return isSandbox ? (getMBMenu(data) || getOwnerMenu(data)) : getOwnerMenu(data);
+}
+
+function itemsByGroup(menu) {
+  const result = {};
+  for (const g of menu.menuGroups || []) {
+    result[g.name] = {};
+    for (const item of g.menuItems || []) {
+      result[g.name][item.name] = item;
+    }
+  }
+  return result;
+}
+
+function getModGroups(item, mgRef, moRef) {
+  const groups = [];
+  for (const refId of item.modifierGroupReferences || []) {
+    const mg = mgRef[String(refId)];
+    if (!mg) continue;
+    const options = (mg.modifierOptionReferences || []).map(oid => {
+      const opt = moRef[String(oid)];
+      return opt?.name || '';
+    }).filter(Boolean);
+    groups.push({
+      name: mg.name || '',
+      guid: mg.guid || '',
+      required: mg.requiredMode || '',
+      min: mg.minSelections,
+      max: mg.maxSelections,
+      options,
+    });
+  }
+  return groups;
+}
+
+function flatItems(menu, mgRef, moRef) {
+  const items = {};
+  for (const g of menu.menuGroups || []) {
+    for (const item of g.menuItems || []) {
+      items[item.name] = {
+        group: g.name,
+        guid: item.guid || '',
+        price: item.price || 0,
+        mgs: getModGroups(item, mgRef, moRef),
+      };
+    }
+  }
+  return items;
+}
+
+// ── Diff logic ─────────────────────────────────────────────────────────────
+function computeDiff(data1, data2, isSandbox2) {
+  const mg1 = data1.modifierGroupReferences || {};
+  const mo1 = data1.modifierOptionReferences || {};
+  const mg2 = data2.modifierGroupReferences || {};
+  const mo2 = data2.modifierOptionReferences || {};
+
+  const m1 = getMenu(data1, false);
+  const m2 = getMenu(data2, isSandbox2);
+  if (!m1) return { error: 'Could not find *Owner / Otter Menu in File 1.' };
+  if (!m2) return { error: 'Could not find menu in File 2.' };
+
+  const items1 = flatItems(m1, mg1, mo1);
+  const items2 = flatItems(m2, mg2, mo2);
+
+  const added = [], removed = [], fixed = [], guidChanges = [];
+  const common = new Set([...Object.keys(items1)].filter(k => items2[k]));
+
+  for (const iname of [...common].sort()) {
+    const d1 = items1[iname], d2 = items2[iname];
+    if (d1.guid !== d2.guid) guidChanges.push({ item: iname, old: d1.guid, new: d2.guid });
+
+    const by1 = Object.fromEntries(d1.mgs.map(m => [m.name, m]));
+    const by2 = Object.fromEntries(d2.mgs.map(m => [m.name, m]));
+    const allMg = [...new Set([...Object.keys(by1), ...Object.keys(by2)])].sort();
+    const diffs = [];
+
+    for (const mgname of allMg) {
+      if (by2[mgname] && !by1[mgname]) { diffs.push(`Mod group ADDED: '${mgname}'`); continue; }
+      if (by1[mgname] && !by2[mgname]) { diffs.push(`Mod group REMOVED: '${mgname}'`); continue; }
+      const do_ = by1[mgname], dn = by2[mgname];
+      if (do_.guid !== dn.guid) diffs.push(`'${mgname}' GUID changed`);
+      if (do_.required !== dn.required) diffs.push(`'${mgname}' required: ${do_.required} → ${dn.required}`);
+      if (do_.min !== dn.min) diffs.push(`'${mgname}' min: ${do_.min} → ${dn.min}`);
+      if (do_.max !== dn.max) diffs.push(`'${mgname}' max: ${do_.max} → ${dn.max}`);
+      const onlyNew = [...new Set(dn.options)].filter(o => !do_.options.includes(o)).sort();
+      const onlyOld = [...new Set(do_.options)].filter(o => !dn.options.includes(o)).sort();
+      if (onlyNew.length) diffs.push(`'${mgname}' options ADDED: ${onlyNew.join(', ')}`);
+      if (onlyOld.length) diffs.push(`'${mgname}' options REMOVED: ${onlyOld.join(', ')}`);
+    }
+    if (diffs.length) fixed.push({ item: iname, group: d2.group, diffs });
+  }
+
+  for (const iname of Object.keys(items2).sort()) {
+    if (!items1[iname]) added.push({ item: iname, ...items2[iname] });
+  }
+  for (const iname of Object.keys(items1).sort()) {
+    if (!items2[iname]) removed.push({ item: iname, group: items1[iname].group });
+  }
+
+  return {
+    menu1: m1.name, menu2: m2.name,
+    updated1: data1.lastUpdated || '', updated2: data2.lastUpdated || '',
+    added, removed, fixed, guidChanges,
+  };
+}
+
+// ── Sync logic ─────────────────────────────────────────────────────────────
+function computeSync(lData, sData) {
+  const lMg = lData.modifierGroupReferences || {};
+  const lMo = lData.modifierOptionReferences || {};
+  const sMg = sData.modifierGroupReferences || {};
+  const sMo = sData.modifierOptionReferences || {};
+
+  const lMenu = getOwnerMenu(lData);
+  const sMenu = getMBMenu(sData) || getOwnerMenu(sData);
+  if (!lMenu) return { error: 'Could not find *Owner / Otter Menu in Lansdale file.' };
+  if (!sMenu) return { error: 'Could not find menu in Sandbox file.' };
+
+  const lGrps = itemsByGroup(lMenu);
+  const sGrps = itemsByGroup(sMenu);
+  const tasks = { add: [], remove: [], fix: [] };
+
+  for (const gname of Object.keys(lGrps).sort()) {
+    const lItems = lGrps[gname];
+    const sItems = sGrps[gname] || {};
+    for (const iname of Object.keys(lItems).sort()) {
+      if (!sItems[iname]) {
+        tasks.add.push({ group: gname, item: iname, price: lItems[iname].price || 0, mgs: getModGroups(lItems[iname], lMg, lMo) });
+      } else {
+        const lMgs = getModGroups(lItems[iname], lMg, lMo);
+        const sMgs = getModGroups(sItems[iname], sMg, sMo);
+        const lBy = Object.fromEntries(lMgs.map(m => [m.name, m]));
+        const sBy = Object.fromEntries(sMgs.map(m => [m.name, m]));
+        const allMg = [...new Set([...Object.keys(lBy), ...Object.keys(sBy)])].sort();
+        const diffs = [];
+        for (const mgname of allMg) {
+          if (lBy[mgname] && !sBy[mgname]) { diffs.push(`Add mod group: '${mgname}'`); continue; }
+          if (sBy[mgname] && !lBy[mgname]) { diffs.push(`Remove mod group: '${mgname}'`); continue; }
+          const ld = lBy[mgname], sd = sBy[mgname];
+          if (ld.required !== sd.required) diffs.push(`'${mgname}' required: ${sd.required} → ${ld.required}`);
+          if (ld.min !== sd.min) diffs.push(`'${mgname}' min: ${sd.min} → ${ld.min}`);
+          if (ld.max !== sd.max) diffs.push(`'${mgname}' max: ${sd.max} → ${ld.max}`);
+          const onlyL = ld.options.filter(o => !sd.options.includes(o)).sort();
+          const onlyS = sd.options.filter(o => !ld.options.includes(o)).sort();
+          if (onlyL.length) diffs.push(`'${mgname}' add options: ${onlyL.join(', ')}`);
+          if (onlyS.length) diffs.push(`'${mgname}' remove options: ${onlyS.join(', ')}`);
+        }
+        if (diffs.length) tasks.fix.push({ group: gname, item: iname, diffs });
+      }
+    }
+    for (const iname of Object.keys(sItems).sort()) {
+      if (!lItems[iname]) tasks.remove.push({ group: gname, item: iname });
+    }
+  }
+
+  return { lUpdated: lData.lastUpdated || '', sUpdated: sData.lastUpdated || '', tasks };
+}
+
+// ── Run diff ───────────────────────────────────────────────────────────────
+async function runDiff() {
+  const errEl = document.getElementById('diff-err');
+  errEl.innerHTML = '';
+  if (!files['zone-d1'] || !files['zone-d2']) {
+    errEl.innerHTML = '<div class="error-msg">Please upload both files.</div>'; return;
+  }
+  const btn = document.querySelector('#panel-diff .run-btn');
+  const spin = document.getElementById('diff-spin');
+  btn.disabled = true; spin.classList.add('running');
+  try {
+    const [d1, d2] = await Promise.all([readJSON(files['zone-d1']), readJSON(files['zone-d2'])]);
+    const isSandbox2 = document.getElementById('sandbox2-check').checked;
+    const result = computeDiff(d1, d2, isSandbox2);
+    if (result.error) { errEl.innerHTML = `<div class="error-msg">${result.error}</div>`; }
+    else renderDiff(result);
+  } catch(e) {
+    errEl.innerHTML = `<div class="error-msg">Could not read files: ${e.message}</div>`;
+  }
+  btn.disabled = false; spin.classList.remove('running');
+}
+
+// ── Run sync ───────────────────────────────────────────────────────────────
+async function runSync() {
+  const errEl = document.getElementById('sync-err');
+  errEl.innerHTML = '';
+  if (!files['zone-l'] || !files['zone-s']) {
+    errEl.innerHTML = '<div class="error-msg">Please upload both files.</div>'; return;
+  }
+  const btn = document.querySelector('#panel-sync .run-btn');
+  const spin = document.getElementById('sync-spin');
+  btn.disabled = true; spin.classList.add('running');
+  try {
+    const [lData, sData] = await Promise.all([readJSON(files['zone-l']), readJSON(files['zone-s'])]);
+    const result = computeSync(lData, sData);
+    if (result.error) { errEl.innerHTML = `<div class="error-msg">${result.error}</div>`; }
+    else renderSync(result);
+  } catch(e) {
+    errEl.innerHTML = `<div class="error-msg">Could not read files: ${e.message}</div>`;
+  }
+  btn.disabled = false; spin.classList.remove('running');
+}
+
+// ── Render diff ────────────────────────────────────────────────────────────
+function renderDiff(data) {
+  const fmtDate = s => s ? s.replace('T',' ').slice(0,16)+' UTC' : '—';
+  let html = `
+    <div class="meta-bar">
+      <span><strong>${esc(data.menu1)}</strong> — ${fmtDate(data.updated1)}</span>
+      <span><strong>${esc(data.menu2)}</strong> — ${fmtDate(data.updated2)}</span>
+    </div>
+    <div class="result-stats">
+      <div class="stat-card"><div class="stat-card-label">Added</div><div class="stat-card-val" style="color:var(--green)">${data.added.length}</div></div>
+      <div class="stat-card"><div class="stat-card-label">Removed</div><div class="stat-card-val" style="color:var(--red)">${data.removed.length}</div></div>
+      <div class="stat-card"><div class="stat-card-label">Modifier changes</div><div class="stat-card-val" style="color:var(--amber)">${data.fixed.length}</div></div>
+      <div class="stat-card"><div class="stat-card-label">GUID changes</div><div class="stat-card-val" style="color:var(--blue)">${data.guidChanges.length}</div></div>
+    </div>`;
+
+  if (data.added.length) {
+    html += section('Added in File 2', data.added.length);
+    data.added.forEach((t,i) => {
+      const hasMgs = t.mgs?.length;
+      html += `<div class="item-row${hasMgs?' expandable':''}" ${hasMgs?`onclick="toggle('da${i}','da-t${i}')"`:''}><div class="item-head">
+        <span class="badge b-add">Added</span><span class="item-name">${esc(t.item)}</span>
+        <span class="item-group">${esc(t.group)}</span>
+        <span class="item-price">$${Number(t.price).toFixed(2)}</span>
+        ${hasMgs?`<span class="expand-toggle" id="da-t${i}">▸ modifiers</span>`:''}
+      </div>${hasMgs?`<div class="item-detail" id="da${i}">${renderMgs(t.mgs)}</div>`:''}</div>`;
+    });
+    html += '</div>';
+  }
+
+  if (data.removed.length) {
+    html += section('Removed in File 2', data.removed.length);
+    data.removed.forEach(t => {
+      html += `<div class="item-row"><div class="item-head"><span class="badge b-remove">Removed</span><span class="item-name">${esc(t.item)}</span><span class="item-group">${esc(t.group)}</span></div></div>`;
+    });
+    html += '</div>';
+  }
+
+  if (data.fixed.length) {
+    html += section('Modifier changes', data.fixed.length);
+    data.fixed.forEach((t,i) => {
+      html += `<div class="item-row expandable" onclick="toggle('df${i}','df-t${i}')"><div class="item-head">
+        <span class="badge b-fix">Modified</span><span class="item-name">${esc(t.item)}</span>
+        <span class="item-group">${esc(t.group)}</span>
+        <span class="expand-toggle" id="df-t${i}">▸ changes</span>
+      </div><div class="item-detail" id="df${i}"><div class="diff-list">${t.diffs.map(d=>`<div class="diff-item">${esc(d)}</div>`).join('')}</div></div></div>`;
+    });
+    html += '</div>';
+  }
+
+  if (data.guidChanges.length) {
+    html += section('GUID changes', data.guidChanges.length);
+    data.guidChanges.forEach(c => {
+      html += `<div class="item-row"><div class="item-head"><span class="badge b-guid">GUID</span><span class="item-name">${esc(c.item)}</span></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:3px">Old: ${c.old}<br>New: ${c.new}</div></div>`;
+    });
+    html += '</div>';
+  }
+
+  if (!data.added.length && !data.removed.length && !data.fixed.length && !data.guidChanges.length) {
+    html += '<div class="empty">No differences found — menus are identical.</div>';
+  }
+
+  document.getElementById('diff-out').innerHTML = html;
+}
+
+// ── Render sync ────────────────────────────────────────────────────────────
+let clState = {}, clItems = [], clFilter = 'all';
+
+function renderSync(data) {
+  const { tasks, lUpdated, sUpdated } = data;
+  clItems = []; clState = {};
+
+  const badgeMap = { add: '<span class="badge b-add">Add</span>', remove: '<span class="badge b-remove">Remove</span>', fix: '<span class="badge b-fix">Fix</span>' };
+
+  tasks.add.forEach((t,i) => {
+    const id = `a${i}`;
+    const sub = t.mgs.length ? t.mgs.map(m => `${m.name} (${m.required==='REQUIRED'?'Required':'Optional'})`).join(' · ') : 'No modifier groups';
+    clItems.push({ id, type:'add', group:t.group, name:t.item, price:t.price, sub });
+    clState[id] = false;
+  });
+  tasks.remove.forEach((t,i) => {
+    const id = `r${i}`;
+    clItems.push({ id, type:'remove', group:t.group, name:t.item, price:0, sub:'In Sandbox but not in Lansdale. Remove.' });
+    clState[id] = false;
+  });
+  tasks.fix.forEach((t,i) => {
+    const id = `f${i}`;
+    clItems.push({ id, type:'fix', group:t.group, name:t.item, price:0, sub:t.diffs.join(' · ') });
+    clState[id] = false;
+  });
+
+  const total = clItems.length;
+  const fmtDate = s => s ? s.replace('T',' ').slice(0,16)+' UTC' : '—';
+
+  document.getElementById('sync-out').innerHTML = `
+    <div class="meta-bar">
+      <span><strong>Lansdale</strong> — ${fmtDate(lUpdated)}</span>
+      <span><strong>Sandbox</strong> — ${fmtDate(sUpdated)}</span>
+    </div>
+    <div class="result-stats">
+      <div class="stat-card"><div class="stat-card-label">Add to Sandbox</div><div class="stat-card-val" style="color:var(--green)">${tasks.add.length}</div></div>
+      <div class="stat-card"><div class="stat-card-label">Remove</div><div class="stat-card-val" style="color:var(--red)">${tasks.remove.length}</div></div>
+      <div class="stat-card"><div class="stat-card-label">Fix modifiers</div><div class="stat-card-val" style="color:var(--amber)">${tasks.fix.length}</div></div>
+      <div class="stat-card"><div class="stat-card-label">Total tasks</div><div class="stat-card-val">${total}</div></div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-info"><span id="cl-lbl">0 of ${total} done</span><span id="cl-pct">0%</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="cl-bar" style="width:0%"></div></div>
+    </div>
+    <div class="filter-row">
+      <button class="f-btn on" onclick="setFilter('all',this)">All (${total})</button>
+      <button class="f-btn" onclick="setFilter('add',this)">Add (${tasks.add.length})</button>
+      <button class="f-btn" onclick="setFilter('remove',this)">Remove (${tasks.remove.length})</button>
+      <button class="f-btn" onclick="setFilter('fix',this)">Fix (${tasks.fix.length})</button>
+      <button class="reset-btn" onclick="resetCl()">reset</button>
+    </div>
+    <div id="cl-list"></div>`;
+
+  drawChecklist();
+}
+
+function drawChecklist() {
+  const el = document.getElementById('cl-list');
+  if (!el) return;
+  const filtered = clFilter === 'all' ? clItems : clItems.filter(i => i.type === clFilter);
+  const byGroup = {};
+  filtered.forEach(i => { (byGroup[i.group] = byGroup[i.group] || []).push(i); });
+
+  let html = '';
+  for (const [gname, rows] of Object.entries(byGroup)) {
+    const done = rows.filter(r => clState[r.id]).length;
+    html += `<div class="section"><div class="section-hdr">${esc(gname)} <span class="section-cnt">${done}/${rows.length}</span></div>`;
+    rows.forEach(item => {
+      const checked = clState[item.id];
+      const bm = { add:'<span class="badge b-add">Add</span>', remove:'<span class="badge b-remove">Remove</span>', fix:'<span class="badge b-fix">Fix</span>' };
+      html += `<div class="checklist-item${checked?' done':''}" onclick="chk('${item.id}')">
+        <input type="checkbox" ${checked?'checked':''} onclick="event.stopPropagation();chk('${item.id}')">
+        <div>
+          <div class="ci-name">${bm[item.type]} ${esc(item.name)}${item.price?' <span style="font-weight:400;color:var(--text2)">$'+Number(item.price).toFixed(2)+'</span>':''}</div>
+          <div class="ci-sub">${esc(item.sub)}</div>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+  if (!html) html = '<div class="empty">No items in this category.</div>';
+  el.innerHTML = html;
+  updateProg();
+}
+
+function chk(id) { clState[id] = !clState[id]; drawChecklist(); }
+function setFilter(f, btn) {
+  clFilter = f;
+  document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  drawChecklist();
+}
+function resetCl() { Object.keys(clState).forEach(k => clState[k] = false); drawChecklist(); }
+function updateProg() {
+  const total = clItems.length;
+  const done = Object.values(clState).filter(Boolean).length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  const l = document.getElementById('cl-lbl');
+  const p = document.getElementById('cl-pct');
+  const b = document.getElementById('cl-bar');
+  if (l) l.textContent = `${done} of ${total} done`;
+  if (p) p.textContent = `${pct}%`;
+  if (b) b.style.width = pct + '%';
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function toggle(id, toggleId) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle('open');
+  const t = document.getElementById(toggleId);
+  if (t) t.textContent = el.classList.contains('open') ? '▾ hide' : '▸ show';
+}
+function renderMgs(mgs) {
+  return (mgs||[]).map(mg => {
+    const req = mg.required === 'REQUIRED' ? '<span class="b-req">REQUIRED</span>' : '<span class="b-opt">optional</span>';
+    const mm = (mg.min != null || mg.max != null) ? ` <span style="font-size:10px;color:var(--text3)">min:${mg.min} max:${mg.max}</span>` : '';
+    const opts = (mg.options||[]).map(o => `<span class="opt-pill">${esc(o)}</span>`).join('');
+    return `<div class="mg-row"><div class="mg-name">${esc(mg.name)} ${req}${mm}</div><div class="mg-opts">${opts}</div></div>`;
+  }).join('');
+}
+function section(title, count) {
+  return `<div class="section"><div class="section-hdr">${title} <span class="section-cnt">${count}</span></div>`;
+}
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
