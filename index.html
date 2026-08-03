@@ -136,26 +136,32 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,s
   <!-- DIFF -->
   <div class="panel active" id="panel-diff">
     <div class="panel-title">Menu Diff</div>
-    <div class="panel-desc">Compare two Toast menu exports — see items added, removed, and modifier changes.</div>
+    <div class="panel-desc">Compare any two Toast menu exports — Lansdale vs Lansdale, Lansdale vs Sandbox, or any two stores. The tool auto-detects the menu in each file.</div>
     <div class="upload-row">
       <div class="upload-zone" id="zone-d1">
         <input type="file" accept=".json" onchange="fileSelected(this,'zone-d1','dname1')">
         <div class="upload-icon">📄</div>
-        <div class="upload-label">File 1 (older)</div>
+        <div class="upload-label">Menu Export A</div>
         <div class="upload-hint">Click or drag & drop</div>
         <div class="upload-filename" id="dname1"></div>
       </div>
       <div class="upload-zone" id="zone-d2">
         <input type="file" accept=".json" onchange="fileSelected(this,'zone-d2','dname2')">
         <div class="upload-icon">📄</div>
-        <div class="upload-label">File 2 (newer)</div>
+        <div class="upload-label">Menu Export B</div>
         <div class="upload-hint">Click or drag & drop</div>
         <div class="upload-filename" id="dname2"></div>
       </div>
     </div>
-    <div class="checkbox-row">
-      <input type="checkbox" id="sandbox2-check">
-      <label for="sandbox2-check">File 2 is a Sandbox export (uses MB Menu GUID)</label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem;">
+      <div class="checkbox-row">
+        <input type="checkbox" id="sandbox1-check">
+        <label for="sandbox1-check">Export A is a Sandbox file</label>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="sandbox2-check">
+        <label for="sandbox2-check">Export B is a Sandbox file</label>
+      </div>
     </div>
     <button class="run-btn" onclick="runDiff()">Run Diff</button>
     <span class="spinner" id="diff-spin">Comparing…</span>
@@ -230,8 +236,16 @@ function getOwnerMenu(data) {
 function getMBMenu(data) {
   return data.menus?.find(m => m.guid === SANDBOX_GUID) || null;
 }
+const LANSDALE_CHALFONT_MENU_GUID = 'cf9db3d5-c804-4441-875d-f998f66689ef';
+const SANDBOX_MENU_GUID_V2       = 'db442458-3bc0-47d6-86a4-3f89ba066fb5';
+
 function getMenu(data, isSandbox) {
-  return isSandbox ? (getMBMenu(data) || getOwnerMenu(data)) : getOwnerMenu(data);
+  if (isSandbox) {
+    // Sandbox: look for Lansdale Clone 2 by GUID or name
+    return data.menus?.find(m => m.guid === SANDBOX_MENU_GUID_V2 || m.guid === SANDBOX_GUID || m.name === 'Lansdale Clone 2') || null;
+  }
+  // Lansdale / Chalfont: look for *Owner / Otter Menu by GUID or name
+  return data.menus?.find(m => m.guid === LANSDALE_CHALFONT_MENU_GUID || m.name?.includes('Owner')) || null;
 }
 
 function itemsByGroup(menu) {
@@ -282,16 +296,16 @@ function flatItems(menu, mgRef, moRef) {
 }
 
 // ── Diff logic ─────────────────────────────────────────────────────────────
-function computeDiff(data1, data2, isSandbox2) {
+function computeDiff(data1, data2, isSandbox1, isSandbox2) {
   const mg1 = data1.modifierGroupReferences || {};
   const mo1 = data1.modifierOptionReferences || {};
   const mg2 = data2.modifierGroupReferences || {};
   const mo2 = data2.modifierOptionReferences || {};
 
-  const m1 = getMenu(data1, false);
+  const m1 = getMenu(data1, isSandbox1);
   const m2 = getMenu(data2, isSandbox2);
-  if (!m1) return { error: 'Could not find *Owner / Otter Menu in File 1.' };
-  if (!m2) return { error: 'Could not find menu in File 2.' };
+  if (!m1) return { error: 'Could not find a menu in Export A. If this is a Sandbox file, check the "Export A is a Sandbox file" box.' };
+  if (!m2) return { error: 'Could not find a menu in Export B. If this is a Sandbox file, check the "Export B is a Sandbox file" box.' };
 
   const items1 = flatItems(m1, mg1, mo1);
   const items2 = flatItems(m2, mg2, mo2);
@@ -345,10 +359,10 @@ function computeSync(lData, sData) {
   const sMg = sData.modifierGroupReferences || {};
   const sMo = sData.modifierOptionReferences || {};
 
-  const lMenu = getOwnerMenu(lData);
-  const sMenu = getMBMenu(sData) || getOwnerMenu(sData);
-  if (!lMenu) return { error: 'Could not find *Owner / Otter Menu in Lansdale file.' };
-  if (!sMenu) return { error: 'Could not find menu in Sandbox file.' };
+  const lMenu = getMenu(lData, false);
+  const sMenu = getMenu(sData, true);
+  if (!lMenu) return { error: 'Could not find *Owner / Otter Menu in the Lansdale file.' };
+  if (!sMenu) return { error: 'Could not find Lansdale Clone 2 menu in the Sandbox file.' };
 
   const lGrps = itemsByGroup(lMenu);
   const sGrps = itemsByGroup(sMenu);
@@ -402,8 +416,9 @@ async function runDiff() {
   btn.disabled = true; spin.classList.add('running');
   try {
     const [d1, d2] = await Promise.all([readJSON(files['zone-d1']), readJSON(files['zone-d2'])]);
+    const isSandbox1 = document.getElementById('sandbox1-check').checked;
     const isSandbox2 = document.getElementById('sandbox2-check').checked;
-    const result = computeDiff(d1, d2, isSandbox2);
+    const result = computeDiff(d1, d2, isSandbox1, isSandbox2);
     if (result.error) { errEl.innerHTML = `<div class="error-msg">${result.error}</div>`; }
     else renderDiff(result);
   } catch(e) {
