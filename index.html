@@ -633,6 +633,7 @@ function computeImport(lData, sData, opts={}) {
         row['Visible to POS']=row['Visible to Kiosk, Toast Order and Pay']=
         row['Visible to Toast Online Ordering, Toast Takeout App']=
         row['Visible to online ordering partners']='TRUE';
+        row['Target ID']=''; row['Owner ID']='';
         copyRef(row, expLookup[name]);
         importRows.push(row);
       }
@@ -659,8 +660,10 @@ function computeImport(lData, sData, opts={}) {
       row['POS Name']=expRow['POS Name']||expRow['POS name']||'';
       row['Kitchen Name']=expRow['Kitchen Name']||expRow['Kitchen name']||'';
       row['Sales category multiLocation ID']=expRow['Sales category multiLocation ID']||'';
-      row['Target ID']=expRow['Target ID']||expRow['Target GUID']||'';
-      row['Owner ID']=expRow['Owner ID']||expRow['Owner GUID']||'';
+      // Do NOT copy Target ID / Owner ID — those are Lansdale-specific location GUIDs
+      // and will fail validation in the Sandbox restaurant
+      row['Target ID']='';
+      row['Owner ID']='';
     }
     copyRef(row, expRow);
     importRows.push(row);
