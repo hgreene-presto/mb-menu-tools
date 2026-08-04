@@ -609,8 +609,9 @@ function computeImport(lData, sData, opts={}) {
   if (!sMenu) return {error:'Could not find Lansdale Clone 2 in Sandbox file.'};
 
   const lMg=lData.modifierGroupReferences||{},lMo=lData.modifierOptionReferences||{};
+  const sMg=sData.modifierGroupReferences||{};
   const lItems=flatItems(lMenu,lMg,lMo);
-  const sItems=flatItems(sMenu,{},{});
+  const sItems=flatItems(sMenu,sMg,{});
   const mbItems=getMBMenuItems(sData,opts.mbMenuName);
   const clone2Groups=getClone2Groups(sData);
   const expLookup=buildExportLookup(exportRows);
@@ -631,6 +632,29 @@ function computeImport(lData, sData, opts={}) {
         row['Visible to POS']=row['Visible to Kiosk, Toast Order and Pay']=
         row['Visible to Toast Online Ordering, Toast Takeout App']=
         row['Visible to online ordering partners']='TRUE';
+        importRows.push(row);
+      }
+
+      // Check missing modifier groups — ATTACH from Sandbox if exists by name
+      const lMgNames = new Set(info.mgs.map(m=>m.name));
+      const sMgNames = new Set(sItems[name].mgs.map(m=>m.name));
+      const missingMgs = [...lMgNames].filter(m=>!sMgNames.has(m));
+      for (const mgName of missingMgs) {
+        // Find this modifier group GUID in sandbox by name
+        let mgGuid = '';
+        for (const [refId, mg] of Object.entries(sMg)) {
+          if ((mg.name||'').trim() === mgName) { mgGuid = mg.guid||''; break; }
+        }
+        if (!mgGuid) continue; // not in sandbox, skip
+        const row=blankRow();
+        row['Operation']='ATTACH'; row['Entity type']='MODIFIER_GROUP';
+        row['Version ID or operation ID']=mgGuid;
+        row['Operation ID']=opId++;
+        row['Visible to POS']=row['Visible to Kiosk, Toast Order and Pay']=
+        row['Visible to Toast Online Ordering, Toast Takeout App']=
+        row['Visible to online ordering partners']='TRUE';
+        row['Parent entity type']='MENU_ITEM';
+        row['Parent version ID OR operation ID']=sItems[name].guid;
         importRows.push(row);
       }
       continue;
@@ -714,36 +738,78 @@ async function runValidate() {
     if (!lMenu) { errEl.innerHTML='<div class="error-msg">Could not find Lansdale Otter menu.</div>'; return; }
     if (!sMenu) { errEl.innerHTML='<div class="error-msg">Could not find Sandbox Clone 2 menu.</div>'; return; }
 
-    // Get item names
+    const lMg=lData.modifierGroupReferences||{};
+    const sMg=sData.modifierGroupReferences||{};
+
+    // Build Lansdale item → modifier group names
     const lItems={};
-    for (const g of lMenu.menuGroups||[])
-      for (const item of g.menuItems||[])
-        lItems[item.name.trim()] = g.name;
+    for (const g of lMenu.menuGroups||[]) {
+      for (const item of g.menuItems||[]) {
+        const name=item.name.trim();
+        const mgs=(item.modifierGroupReferences||[]).map(ref=>{
+          const mg=lMg[String(ref)]; return mg?.name?.trim()||null;
+        }).filter(Boolean);
+        lItems[name]={group:g.name, mgs};
+      }
+    }
 
-    const sItems=new Set();
-    for (const g of sMenu.menuGroups||[])
-      for (const item of g.menuItems||[])
-        sItems.add(item.name.trim());
+    // Build Sandbox Clone 2 item → modifier group names
+    const sItems={};
+    for (const g of sMenu.menuGroups||[]) {
+      for (const item of g.menuItems||[]) {
+        const name=item.name.trim();
+        const mgs=(item.modifierGroupReferences||[]).map(ref=>{
+          if (typeof ref==='object') return ref?.name?.trim()||null;
+          const mg=sMg[String(ref)]; return mg?.name?.trim()||null;
+        }).filter(Boolean);
+        if (!sItems[name]) sItems[name]={mgs};
+      }
+    }
 
-    const missing=Object.keys(lItems).filter(n=>!sItems.has(n)).sort();
-    const extra=[...sItems].filter(n=>!lItems[n]).sort();
+    const missingItems=Object.keys(lItems).filter(n=>!sItems[n]).sort();
+    const extra=Object.keys(sItems).filter(n=>!lItems[n]).sort();
+    const mgIssues=[];
+
+    for (const name of Object.keys(lItems)) {
+      if (!sItems[name]) continue;
+      const lMgs=new Set(lItems[name].mgs);
+      const sMgs=new Set(sItems[name].mgs);
+      const missing=[...lMgs].filter(m=>!sMgs.has(m));
+      if (missing.length) mgIssues.push({name, missing});
+    }
 
     const el=document.getElementById('imp-out');
-    if (!missing.length) {
-      el.innerHTML=`<div style="background:rgba(90,170,106,.1);border:1px solid rgba(90,170,106,.3);border-radius:var(--r);padding:16px 20px;">
-        <div style="font-size:15px;font-weight:600;color:var(--green);margin-bottom:4px;">✅ All ${Object.keys(lItems).length} Lansdale items are present in Clone 2</div>
+    const allOk=!missingItems.length&&!mgIssues.length;
+
+    let html='';
+    if (allOk) {
+      html=`<div style="background:rgba(90,170,106,.1);border:1px solid rgba(90,170,106,.3);border-radius:var(--r);padding:16px 20px;">
+        <div style="font-size:15px;font-weight:600;color:var(--green);margin-bottom:4px;">✅ All ${Object.keys(lItems).length} items and their modifier groups match Clone 2</div>
         ${extra.length?`<div style="font-size:12px;color:var(--text2);margin-top:8px;">${extra.length} extra items in Clone 2 not in Lansdale (remove manually): ${extra.map(n=>`<strong>${esc(n)}</strong>`).join(', ')}</div>`:''}
       </div>`;
     } else {
-      let html=`<div style="background:rgba(224,85,85,.1);border:1px solid rgba(224,85,85,.3);border-radius:var(--r);padding:16px 20px;margin-bottom:12px;">
-        <div style="font-size:15px;font-weight:600;color:var(--red);margin-bottom:8px;">✗ ${missing.length} item${missing.length>1?'s':''} missing from Clone 2</div>`;
-      for (const n of missing)
-        html+=`<div style="font-size:13px;padding:3px 0;border-bottom:1px solid rgba(224,85,85,.15)">${esc(n)} <span style="font-size:11px;color:var(--text3)">[${esc(lItems[n])}]</span></div>`;
-      html+=`</div>`;
+      if (missingItems.length) {
+        html+=`<div style="background:rgba(224,85,85,.1);border:1px solid rgba(224,85,85,.3);border-radius:var(--r);padding:16px 20px;margin-bottom:12px;">
+          <div style="font-size:14px;font-weight:600;color:var(--red);margin-bottom:8px;">✗ ${missingItems.length} item${missingItems.length>1?'s':''} missing from Clone 2</div>`;
+        for (const n of missingItems)
+          html+=`<div style="font-size:13px;padding:3px 0;border-bottom:1px solid rgba(224,85,85,.15)">${esc(n)} <span style="font-size:11px;color:var(--text3)">[${esc(lItems[n].group)}]</span></div>`;
+        html+=`</div>`;
+      }
+      if (mgIssues.length) {
+        html+=`<div style="background:rgba(232,168,56,.1);border:1px solid rgba(232,168,56,.3);border-radius:var(--r);padding:16px 20px;margin-bottom:12px;">
+          <div style="font-size:14px;font-weight:600;color:var(--amber);margin-bottom:8px;">⚠ ${mgIssues.length} item${mgIssues.length>1?'s':''} with missing modifier groups</div>`;
+        for (const issue of mgIssues) {
+          html+=`<div style="font-size:13px;padding:5px 0;border-bottom:1px solid rgba(232,168,56,.15);">
+            <strong>${esc(issue.name)}</strong>
+            <div style="font-size:11px;color:var(--text2);margin-top:2px;">Missing: ${issue.missing.map(m=>`<span style="background:var(--bg4);border-radius:4px;padding:1px 6px;margin:1px;">${esc(m)}</span>`).join(' ')}</div>
+          </div>`;
+        }
+        html+=`</div>`;
+      }
       if (extra.length)
-        html+=`<div style="font-size:12px;color:var(--text2);">${extra.length} extra in Clone 2 (remove manually): ${extra.map(n=>`<strong>${esc(n)}</strong>`).join(', ')}</div>`;
-      el.innerHTML=html;
+        html+=`<div style="font-size:12px;color:var(--text2);margin-top:8px;">${extra.length} extra in Clone 2 (remove manually): ${extra.map(n=>`<strong>${esc(n)}</strong>`).join(', ')}</div>`;
     }
+    el.innerHTML=html;
   } catch(e) { errEl.innerHTML=`<div class="error-msg">Error: ${e.message}</div>`; }
   btn.disabled=false; btn.textContent='✓ Validate';
 }
@@ -909,7 +975,8 @@ let _impRows=null;
 function renderImport(data) {
   const {rows,clone2Groups}=data;
   _impRows=rows;
-  const attachCount=rows.filter(r=>r['Operation']==='ATTACH').length;
+  const attachItemCount=rows.filter(r=>r['Operation']==='ATTACH'&&r['Entity type']==='MENU_ITEM').length;
+  const attachMgCount=rows.filter(r=>r['Operation']==='ATTACH'&&r['Entity type']==='MODIFIER_GROUP').length;
   const createCount=rows.filter(r=>r['Operation']==='CREATE').length;
   const updateCount=rows.filter(r=>r['Operation']==='UPDATE').length;
   const el=document.getElementById('imp-out');
@@ -917,10 +984,10 @@ function renderImport(data) {
     el.innerHTML='<div class="empty">✅ No changes needed — Sandbox matches Lansdale!</div>'; return;
   }
   let html=`<div class="result-stats">
-    <div class="stat-card"><div class="stat-card-label">ATTACH</div><div class="stat-card-val" style="color:var(--blue)">${attachCount}</div></div>
+    <div class="stat-card"><div class="stat-card-label">ATTACH items</div><div class="stat-card-val" style="color:var(--blue)">${attachItemCount}</div></div>
+    <div class="stat-card"><div class="stat-card-label">ATTACH mod groups</div><div class="stat-card-val" style="color:var(--blue)">${attachMgCount}</div></div>
     <div class="stat-card"><div class="stat-card-label">CREATE</div><div class="stat-card-val" style="color:var(--green)">${createCount}</div></div>
     <div class="stat-card"><div class="stat-card-label">UPDATE</div><div class="stat-card-val" style="color:var(--amber)">${updateCount}</div></div>
-    <div class="stat-card"><div class="stat-card-label">Total rows</div><div class="stat-card-val">${rows.length}</div></div>
   </div>
   <div style="margin-bottom:1rem;">
     <button class="run-btn" onclick="downloadImport()">⬇ Download Import CSV</button>
