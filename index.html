@@ -25,13 +25,14 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,s
 .nav-tab:hover { color:var(--text); }
 .nav-tab.active { background:var(--bg2); color:var(--text); border-color:var(--border2); border-bottom-color:var(--bg2); }
 
-.main { padding:0 2rem 4rem; max-width:900px; }
+.main { padding:0 2rem 4rem; max-width:960px; }
 .panel { display:none; background:var(--bg2); border:1px solid var(--border2); border-radius:0 var(--r) var(--r) var(--r); padding:2rem; }
 .panel.active { display:block; }
 .panel-title { font-size:18px; font-weight:600; margin-bottom:6px; }
 .panel-desc { font-size:13px; color:var(--text2); margin-bottom:1.75rem; }
 
 .upload-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.25rem; }
+.upload-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; margin-bottom:1.25rem; }
 .upload-zone { border:1.5px dashed var(--border2); border-radius:var(--r); padding:1.5rem; text-align:center; cursor:pointer; transition:all .15s; position:relative; }
 .upload-zone:hover, .upload-zone.dragover { border-color:var(--accent); background:rgba(232,168,56,.06); }
 .upload-zone.has-file { border-color:var(--green); border-style:solid; background:rgba(90,170,106,.06); }
@@ -47,6 +48,8 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,s
 .run-btn { background:var(--accent); color:#000; border:none; border-radius:var(--r); padding:10px 24px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit; transition:background .15s; }
 .run-btn:hover { background:var(--accent2); }
 .run-btn:disabled { opacity:.4; cursor:not-allowed; }
+.dl-btn { background:var(--green); color:#000; border:none; border-radius:var(--r); padding:10px 24px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit; transition:background .15s; margin-left:10px; }
+.dl-btn:hover { background:#4a9a5a; }
 .spinner { display:none; margin-left:10px; font-size:13px; color:var(--text3); }
 .spinner.running { display:inline; }
 
@@ -71,12 +74,15 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,s
 .expand-toggle { font-size:11px; color:var(--text3); margin-left:auto; flex-shrink:0; }
 
 .badge { font-size:10px; font-weight:600; padding:2px 7px; border-radius:var(--pill); white-space:nowrap; flex-shrink:0; }
-.b-add  { background:rgba(90,170,106,.15);  color:var(--green); }
-.b-remove { background:rgba(224,85,85,.15); color:var(--red); }
-.b-fix  { background:rgba(232,168,56,.15);  color:var(--amber); }
-.b-guid { background:rgba(91,155,213,.15);  color:var(--blue); }
-.b-req  { color:var(--red);   font-size:10px; font-weight:600; }
-.b-opt  { color:var(--green); font-size:10px; font-weight:600; }
+.b-add    { background:rgba(90,170,106,.15);  color:var(--green); }
+.b-remove { background:rgba(224,85,85,.15);   color:var(--red); }
+.b-fix    { background:rgba(232,168,56,.15);  color:var(--amber); }
+.b-guid   { background:rgba(91,155,213,.15);  color:var(--blue); }
+.b-attach { background:rgba(91,155,213,.15);  color:var(--blue); }
+.b-create { background:rgba(90,170,106,.15);  color:var(--green); }
+.b-update { background:rgba(232,168,56,.15);  color:var(--amber); }
+.b-req    { color:var(--red);   font-size:10px; font-weight:600; }
+.b-opt    { color:var(--green); font-size:10px; font-weight:600; }
 
 .item-detail { display:none; padding-top:8px; }
 .item-detail.open { display:block; }
@@ -112,8 +118,30 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,s
 .f-btn.on { background:var(--bg3); color:var(--text); font-weight:500; }
 .reset-btn { font-size:11px; color:var(--text3); background:none; border:none; cursor:pointer; text-decoration:underline; font-family:inherit; margin-left:auto; }
 
+/* import table */
+.imp-table-wrap { overflow-x:auto; border-radius:var(--r); border:1px solid var(--border); margin-top:1rem; }
+.imp-table { width:100%; border-collapse:collapse; font-size:12px; }
+.imp-table thead th { background:var(--bg3); padding:9px 12px; text-align:left; font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--text3); border-bottom:1px solid var(--border); white-space:nowrap; }
+.imp-table tbody tr { border-bottom:1px solid var(--border); }
+.imp-table tbody tr:last-child { border-bottom:none; }
+.imp-table tbody tr:hover { background:var(--bg3); }
+.imp-table td { padding:8px 12px; vertical-align:middle; }
+
+/* advanced settings */
+.adv-toggle { font-size:12px; color:var(--text3); background:none; border:none; cursor:pointer; font-family:inherit; text-decoration:underline; padding:0; margin-bottom:1rem; display:block; }
+.adv-toggle:hover { color:var(--text2); }
+.adv-panel { display:none; background:var(--bg3); border:1px solid var(--border); border-radius:var(--r); padding:1.25rem 1.5rem; margin-bottom:1.25rem; }
+.adv-panel.open { display:block; }
+.adv-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.adv-field { display:flex; flex-direction:column; gap:4px; }
+.adv-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--text3); }
+.adv-input { background:var(--bg4); border:1px solid var(--border2); border-radius:6px; padding:7px 10px; font-size:12px; color:var(--text); font-family:monospace; outline:none; }
+.adv-input:focus { border-color:var(--accent); }
+.adv-input::placeholder { color:var(--text3); }
+.adv-note { font-size:11px; color:var(--text3); margin-top:8px; grid-column:1/-1; }
+
 @media(max-width:600px){
-  .upload-row { grid-template-columns:1fr; }
+  .upload-row,.upload-row-3 { grid-template-columns:1fr; }
   .result-stats { grid-template-columns:repeat(2,1fr); }
   .main,.header { padding-left:1rem; padding-right:1rem; }
   .nav { padding-left:1rem; }
@@ -129,11 +157,12 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,s
 <div class="nav">
   <button class="nav-tab active" onclick="switchTab('diff',this)">Menu Diff</button>
   <button class="nav-tab" onclick="switchTab('sync',this)">Sync Checklist</button>
+  <button class="nav-tab" onclick="switchTab('import',this)">Import Generator</button>
 </div>
 
 <div class="main">
 
-  <!-- DIFF -->
+  <!-- ═══ DIFF ═══ -->
   <div class="panel active" id="panel-diff">
     <div class="panel-title">Menu Diff</div>
     <div class="panel-desc">Compare any two Toast menu exports — Lansdale vs Lansdale, Lansdale vs Sandbox, or any two stores. The tool auto-detects the menu in each file.</div>
@@ -141,19 +170,19 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,s
       <div class="upload-zone" id="zone-d1">
         <input type="file" accept=".json" onchange="fileSelected(this,'zone-d1','dname1')">
         <div class="upload-icon">📄</div>
-        <div class="upload-label">Menu Export A</div>
-        <div class="upload-hint">Click or drag & drop</div>
+        <div class="upload-label">Menu JSON A</div>
+        <div class="upload-hint">Click or drag & drop (.json)</div>
         <div class="upload-filename" id="dname1"></div>
       </div>
       <div class="upload-zone" id="zone-d2">
         <input type="file" accept=".json" onchange="fileSelected(this,'zone-d2','dname2')">
         <div class="upload-icon">📄</div>
-        <div class="upload-label">Menu Export B</div>
-        <div class="upload-hint">Click or drag & drop</div>
+        <div class="upload-label">Menu JSON B</div>
+        <div class="upload-hint">Click or drag & drop (.json)</div>
         <div class="upload-filename" id="dname2"></div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
       <div class="checkbox-row">
         <input type="checkbox" id="sandbox1-check">
         <label for="sandbox1-check">Export A is a Sandbox file</label>
@@ -163,13 +192,27 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,s
         <label for="sandbox2-check">Export B is a Sandbox file</label>
       </div>
     </div>
+    <button class="adv-toggle" onclick="toggleAdv('diff-adv')">⚙ Advanced settings</button>
+    <div class="adv-panel" id="diff-adv">
+      <div class="adv-grid">
+        <div class="adv-field">
+          <label class="adv-label">Source menu GUID (A)</label>
+          <input class="adv-input" id="diff-menu-guid-a" placeholder="auto-detect (Owner/Otter)" value="">
+        </div>
+        <div class="adv-field">
+          <label class="adv-label">Source menu GUID (B)</label>
+          <input class="adv-input" id="diff-menu-guid-b" placeholder="auto-detect" value="">
+        </div>
+        <div class="adv-note">Leave blank to use auto-detection. Override if comparing non-standard menus.</div>
+      </div>
+    </div>
     <button class="run-btn" onclick="runDiff()">Run Diff</button>
     <span class="spinner" id="diff-spin">Comparing…</span>
     <div id="diff-err"></div>
     <div class="results" id="diff-out"></div>
   </div>
 
-  <!-- SYNC -->
+  <!-- ═══ SYNC ═══ -->
   <div class="panel" id="panel-sync">
     <div class="panel-title">Sync Checklist</div>
     <div class="panel-desc">Upload Lansdale and Sandbox exports — get a checklist of everything needed to bring Sandbox in line with Lansdale.</div>
@@ -189,20 +232,113 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,s
         <div class="upload-filename" id="sname"></div>
       </div>
     </div>
+    <button class="adv-toggle" onclick="toggleAdv('sync-adv')">⚙ Advanced settings</button>
+    <div class="adv-panel" id="sync-adv">
+      <div class="adv-grid">
+        <div class="adv-field">
+          <label class="adv-label">Lansdale Otter Menu GUID</label>
+          <input class="adv-input" id="sync-lansdale-guid" placeholder="cf9db3d5-c804-4441-875d-f998f66689ef" value="cf9db3d5-c804-4441-875d-f998f66689ef">
+          <span class="adv-note" style="grid-column:unset">Menu GUID (within the store)</span>
+        </div>
+        <div class="adv-field">
+          <label class="adv-label">Sandbox Menu GUID</label>
+          <input class="adv-input" id="sync-sandbox-guid" placeholder="db442458-3bc0-47d6-86a4-3f89ba066fb5" value="db442458-3bc0-47d6-86a4-3f89ba066fb5">
+          <span class="adv-note" style="grid-column:unset">Menu GUID — e.g. Lansdale Clone 2</span>
+        </div>
+        <div class="adv-field">
+          <label class="adv-label">Sandbox Restaurant GUID</label>
+          <input class="adv-input" id="sync-restaurant-guid" placeholder="9c6be757-c249-421d-aaf2-725a4dcc7331" value="9c6be757-c249-421d-aaf2-725a4dcc7331">
+          <span class="adv-note" style="grid-column:unset">Restaurant GUID (store-level)</span>
+        </div>
+        <div class="adv-note">Pre-filled with Manhattan Bagel Lansdale defaults. Change if using a different store.</div>
+      </div>
+    </div>
     <button class="run-btn" onclick="runSync()">Generate Checklist</button>
     <span class="spinner" id="sync-spin">Building checklist…</span>
     <div id="sync-err"></div>
     <div class="results" id="sync-out"></div>
   </div>
 
+  <!-- ═══ IMPORT GENERATOR ═══ -->
+  <div class="panel" id="panel-import">
+    <div class="panel-title">Import Generator</div>
+    <div class="panel-desc">Upload the Lansdale JSON, Sandbox JSON, and a Toast menu export (CSV or XLSX). The tool figures out what needs to change and builds a ready-to-upload import file.</div>
+    <div class="upload-row-3">
+      <div class="upload-zone" id="zone-il">
+        <input type="file" accept=".json" onchange="fileSelected(this,'zone-il','ilname')">
+        <div class="upload-icon">🥯</div>
+        <div class="upload-label">Lansdale JSON</div>
+        <div class="upload-hint">Source of truth (*Owner / Otter)</div>
+        <div class="upload-filename" id="ilname"></div>
+      </div>
+      <div class="upload-zone" id="zone-is">
+        <input type="file" accept=".json" onchange="fileSelected(this,'zone-is','isname')">
+        <div class="upload-icon">🧪</div>
+        <div class="upload-label">Sandbox JSON</div>
+        <div class="upload-hint">Current Sandbox state</div>
+        <div class="upload-filename" id="isname"></div>
+      </div>
+      <div class="upload-zone" id="zone-ie">
+        <input type="file" accept=".csv,.xlsx,.xls" onchange="loadExport(this)">
+        <div class="upload-icon">📊</div>
+        <div class="upload-label">Toast Export</div>
+        <div class="upload-hint">CSV or XLSX from Toast Portal</div>
+        <div class="upload-filename" id="iename"></div>
+      </div>
+    </div>
+    <button class="adv-toggle" onclick="toggleAdv('imp-adv')">⚙ Advanced settings</button>
+    <div class="adv-panel" id="imp-adv">
+      <div class="adv-grid">
+        <div class="adv-field">
+          <label class="adv-label">Lansdale Otter Menu GUID</label>
+          <input class="adv-input" id="imp-lansdale-guid" placeholder="cf9db3d5-c804-4441-875d-f998f66689ef" value="cf9db3d5-c804-4441-875d-f998f66689ef">
+          <span class="adv-note" style="grid-column:unset">Menu GUID (within the store)</span>
+        </div>
+        <div class="adv-field">
+          <label class="adv-label">Sandbox Menu GUID</label>
+          <input class="adv-input" id="imp-sandbox-menu-guid" placeholder="db442458-3bc0-47d6-86a4-3f89ba066fb5" value="db442458-3bc0-47d6-86a4-3f89ba066fb5">
+          <span class="adv-note" style="grid-column:unset">Menu GUID — e.g. Lansdale Clone 2</span>
+        </div>
+        <div class="adv-field">
+          <label class="adv-label">MB Menu Group Name</label>
+          <input class="adv-input" id="imp-mb-menu-name" placeholder="MB Menu" value="MB Menu">
+          <span class="adv-note" style="grid-column:unset">Menu group name in the Sandbox</span>
+        </div>
+        <div class="adv-field">
+          <label class="adv-label">Sandbox Menu Name</label>
+          <input class="adv-input" id="imp-clone-menu-name" placeholder="Lansdale Clone 2" value="Lansdale Clone 2">
+          <span class="adv-note" style="grid-column:unset">Name of the target menu — e.g. Lansdale Clone 2</span>
+        </div>
+        <div class="adv-note">Pre-filled with Manhattan Bagel Lansdale defaults. Override for other stores or sandbox environments.</div>
+      </div>
+    </div>
+    <button class="run-btn" id="imp-run-btn" onclick="runImport()">Generate Import File</button>
+    <span class="spinner" id="imp-spin">Building…</span>
+    <div id="imp-err"></div>
+    <div class="results" id="imp-out"></div>
+  </div>
+
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 // ── Constants ──────────────────────────────────────────────────────────────
-const SANDBOX_GUID = 'f9499d31-2ba6-4a37-82bf-0b46a8f33ea9';
+const SANDBOX_GUID         = 'f9499d31-2ba6-4a37-82bf-0b46a8f33ea9';
+const LANSDALE_MENU_GUID   = 'cf9db3d5-c804-4441-875d-f998f66689ef';
+const SANDBOX_MENU_GUID_V2 = 'db442458-3bc0-47d6-86a4-3f89ba066fb5';
+
+const GROUP_MAP = {
+  'Energy & Focus':          'Bottled Drinks',
+  'Smoothies & Iced Drinks': 'Lemonade & Iced Tea',
+  'Iced Coffee Drinks':      'Espresso & Iced Coffee',
+  'Signature Egg Sandwiches':'Signatures',
+  'Egg Sandwiches':          'Bagel Favorites',
+  'Egg Sandiwches':          'Bagel Favorites',
+};
 
 // ── File store ─────────────────────────────────────────────────────────────
 const files = {};
+let exportRows = null;
 
 function fileSelected(input, zoneId, nameId) {
   const file = input.files[0];
@@ -212,8 +348,54 @@ function fileSelected(input, zoneId, nameId) {
   document.getElementById(zoneId).classList.add('has-file');
 }
 
+function loadExport(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById('iename').textContent = file.name;
+  document.getElementById('zone-ie').classList.add('has-file');
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (ext === 'csv') {
+    const r = new FileReader();
+    r.onload = e => { exportRows = parseCSV(e.target.result); };
+    r.readAsText(file);
+  } else {
+    const r = new FileReader();
+    r.onload = e => {
+      const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      exportRows = XLSX.utils.sheet_to_json(ws, {defval:''});
+    };
+    r.readAsArrayBuffer(file);
+  }
+}
+
+function parseCSV(text) {
+  const lines = text.split('\n');
+  const headers = splitLine(lines[0]);
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    const vals = splitLine(lines[i]);
+    const row = {};
+    headers.forEach((h,idx) => row[h] = (vals[idx]||'').trim());
+    rows.push(row);
+  }
+  return rows;
+}
+
+function splitLine(line) {
+  const res=[]; let cur=''; let inQ=false;
+  for (let i=0;i<line.length;i++) {
+    const c=line[i];
+    if (c==='"') inQ=!inQ;
+    else if (c===','&&!inQ) { res.push(cur.trim()); cur=''; }
+    else cur+=c;
+  }
+  res.push(cur.trim()); return res;
+}
+
 function readJSON(file) {
-  return new Promise((res, rej) => {
+  return new Promise((res,rej) => {
     const r = new FileReader();
     r.onload = e => { try { res(JSON.parse(e.target.result)); } catch(err) { rej(err); } };
     r.onerror = rej;
@@ -230,319 +412,397 @@ function switchTab(tab, btn) {
 }
 
 // ── Menu parsing ───────────────────────────────────────────────────────────
-function getOwnerMenu(data) {
-  return data.menus?.find(m => m.name?.includes('Owner')) || null;
-}
-function getMBMenu(data) {
-  return data.menus?.find(m => m.guid === SANDBOX_GUID) || null;
-}
-const LANSDALE_CHALFONT_MENU_GUID = 'cf9db3d5-c804-4441-875d-f998f66689ef';
-const SANDBOX_MENU_GUID_V2       = 'db442458-3bc0-47d6-86a4-3f89ba066fb5';
-
-function getMenu(data, isSandbox) {
+function getMenu(data, isSandbox, overrideGuid, cloneMenuName) {
   if (isSandbox) {
-    // Sandbox: look for Lansdale Clone 2 by GUID or name
-    return data.menus?.find(m => m.guid === SANDBOX_MENU_GUID_V2 || m.guid === SANDBOX_GUID || m.name === 'Lansdale Clone 2') || null;
+    const cloneName = cloneMenuName || 'Lansdale Clone 2';
+    if (overrideGuid) return data.menus?.find(m => m.guid === overrideGuid) || null;
+    return data.menus?.find(m => m.guid === SANDBOX_MENU_GUID_V2 || m.guid === SANDBOX_GUID || m.name === cloneName || m.name?.toLowerCase().includes('clone')) || null;
   }
-  // Lansdale / Chalfont: look for *Owner / Otter Menu by GUID or name
-  return data.menus?.find(m => m.guid === LANSDALE_CHALFONT_MENU_GUID || m.name?.includes('Owner')) || null;
+  if (overrideGuid) return data.menus?.find(m => m.guid === overrideGuid) || null;
+  return data.menus?.find(m => m.guid === LANSDALE_MENU_GUID || m.name?.includes('Owner')) || null;
 }
 
 function itemsByGroup(menu) {
   const result = {};
-  for (const g of menu.menuGroups || []) {
+  for (const g of menu.menuGroups||[]) {
     result[g.name] = {};
-    for (const item of g.menuItems || []) {
-      result[g.name][item.name] = item;
-    }
+    for (const item of g.menuItems||[]) result[g.name][item.name] = item;
   }
   return result;
 }
 
 function getModGroups(item, mgRef, moRef) {
   const groups = [];
-  for (const refId of item.modifierGroupReferences || []) {
+  for (const refId of item.modifierGroupReferences||[]) {
     const mg = mgRef[String(refId)];
     if (!mg) continue;
-    const options = (mg.modifierOptionReferences || []).map(oid => {
+    const options = (mg.modifierOptionReferences||[]).map(oid => {
       const opt = moRef[String(oid)];
-      return opt?.name || '';
+      return opt?.name||'';
     }).filter(Boolean);
-    groups.push({
-      name: mg.name || '',
-      guid: mg.guid || '',
-      required: mg.requiredMode || '',
-      min: mg.minSelections,
-      max: mg.maxSelections,
-      options,
-    });
+    groups.push({ name:mg.name||'', guid:mg.guid||'', required:mg.requiredMode||'', min:mg.minSelections, max:mg.maxSelections, options });
   }
   return groups;
 }
 
 function flatItems(menu, mgRef, moRef) {
   const items = {};
-  for (const g of menu.menuGroups || []) {
-    for (const item of g.menuItems || []) {
-      items[item.name] = {
-        group: g.name,
-        guid: item.guid || '',
-        price: item.price || 0,
-        mgs: getModGroups(item, mgRef, moRef),
-      };
+  for (const g of menu.menuGroups||[]) {
+    for (const item of g.menuItems||[]) {
+      items[item.name] = { group:g.name, guid:item.guid||'', price:item.price||0, mgs:getModGroups(item,mgRef,moRef) };
     }
   }
   return items;
 }
 
+function getMBMenuItems(data, mbMenuName) {
+  const items = {};
+  const name = mbMenuName || 'MB Menu';
+  const mbMenu = data.menus?.find(m => m.name === name);
+  if (!mbMenu) return items;
+  for (const g of mbMenu.menuGroups||[]) {
+    for (const item of g.menuItems||[]) {
+      if (!items[item.name]) items[item.name] = item.guid;
+    }
+  }
+  return items;
+}
+
+function getClone2Groups(data) {
+  const groups = {};
+  const menu = getMenu(data, true);
+  if (!menu) return groups;
+  for (const g of menu.menuGroups||[]) groups[g.name] = g.guid;
+  return groups;
+}
+
+function bestGroup(lansdaleGroup, clone2Groups) {
+  if (clone2Groups[lansdaleGroup]) return lansdaleGroup;
+  const mapped = GROUP_MAP[lansdaleGroup];
+  if (mapped && clone2Groups[mapped]) return mapped;
+  const lw = lansdaleGroup.toLowerCase().split(/\W+/);
+  let best=null, bestScore=0;
+  for (const g of Object.keys(clone2Groups)) {
+    const gw = g.toLowerCase().split(/\W+/);
+    const score = lw.filter(w=>gw.includes(w)).length;
+    if (score > bestScore) { bestScore=score; best=g; }
+  }
+  return best || Object.keys(clone2Groups)[0] || '';
+}
+
 // ── Diff logic ─────────────────────────────────────────────────────────────
-function computeDiff(data1, data2, isSandbox1, isSandbox2) {
-  const mg1 = data1.modifierGroupReferences || {};
-  const mo1 = data1.modifierOptionReferences || {};
-  const mg2 = data2.modifierGroupReferences || {};
-  const mo2 = data2.modifierOptionReferences || {};
-
-  const m1 = getMenu(data1, isSandbox1);
-  const m2 = getMenu(data2, isSandbox2);
-  if (!m1) return { error: 'Could not find a menu in Export A. If this is a Sandbox file, check the "Export A is a Sandbox file" box.' };
-  if (!m2) return { error: 'Could not find a menu in Export B. If this is a Sandbox file, check the "Export B is a Sandbox file" box.' };
-
-  const items1 = flatItems(m1, mg1, mo1);
-  const items2 = flatItems(m2, mg2, mo2);
-
-  const added = [], removed = [], fixed = [], guidChanges = [];
-  const common = new Set([...Object.keys(items1)].filter(k => items2[k]));
-
+function computeDiff(data1, data2, isSandbox1, isSandbox2, guidA, guidB) {
+  const mg1=data1.modifierGroupReferences||{}, mo1=data1.modifierOptionReferences||{};
+  const mg2=data2.modifierGroupReferences||{}, mo2=data2.modifierOptionReferences||{};
+  const m1=getMenu(data1,isSandbox1,guidA), m2=getMenu(data2,isSandbox2,guidB);
+  if (!m1) return {error:'Could not find a menu in Export A. If this is a Sandbox file, check the box.'};
+  if (!m2) return {error:'Could not find a menu in Export B. If this is a Sandbox file, check the box.'};
+  const items1=flatItems(m1,mg1,mo1), items2=flatItems(m2,mg2,mo2);
+  const added=[],removed=[],fixed=[],guidChanges=[];
+  const common=new Set([...Object.keys(items1)].filter(k=>items2[k]));
   for (const iname of [...common].sort()) {
-    const d1 = items1[iname], d2 = items2[iname];
-    if (d1.guid !== d2.guid) guidChanges.push({ item: iname, old: d1.guid, new: d2.guid });
-
-    const by1 = Object.fromEntries(d1.mgs.map(m => [m.name, m]));
-    const by2 = Object.fromEntries(d2.mgs.map(m => [m.name, m]));
-    const allMg = [...new Set([...Object.keys(by1), ...Object.keys(by2)])].sort();
-    const diffs = [];
-
+    const d1=items1[iname],d2=items2[iname];
+    if (d1.guid!==d2.guid) guidChanges.push({item:iname,old:d1.guid,new_:d2.guid});
+    const by1=Object.fromEntries(d1.mgs.map(m=>[m.name,m]));
+    const by2=Object.fromEntries(d2.mgs.map(m=>[m.name,m]));
+    const allMg=[...new Set([...Object.keys(by1),...Object.keys(by2)])].sort();
+    const diffs=[];
     for (const mgname of allMg) {
-      if (by2[mgname] && !by1[mgname]) { diffs.push(`Mod group ADDED: '${mgname}'`); continue; }
-      if (by1[mgname] && !by2[mgname]) { diffs.push(`Mod group REMOVED: '${mgname}'`); continue; }
-      const do_ = by1[mgname], dn = by2[mgname];
-      if (do_.guid !== dn.guid) diffs.push(`'${mgname}' GUID changed`);
-      if (do_.required !== dn.required) diffs.push(`'${mgname}' required: ${do_.required} → ${dn.required}`);
-      if (do_.min !== dn.min) diffs.push(`'${mgname}' min: ${do_.min} → ${dn.min}`);
-      if (do_.max !== dn.max) diffs.push(`'${mgname}' max: ${do_.max} → ${dn.max}`);
-      const onlyNew = [...new Set(dn.options)].filter(o => !do_.options.includes(o)).sort();
-      const onlyOld = [...new Set(do_.options)].filter(o => !dn.options.includes(o)).sort();
+      if (by2[mgname]&&!by1[mgname]) { diffs.push(`Mod group ADDED: '${mgname}'`); continue; }
+      if (by1[mgname]&&!by2[mgname]) { diffs.push(`Mod group REMOVED: '${mgname}'`); continue; }
+      const do_=by1[mgname],dn=by2[mgname];
+      if (do_.guid!==dn.guid) diffs.push(`'${mgname}' GUID changed`);
+      if (do_.required!==dn.required) diffs.push(`'${mgname}' required: ${do_.required} → ${dn.required}`);
+      if (do_.min!==dn.min) diffs.push(`'${mgname}' min: ${do_.min} → ${dn.min}`);
+      if (do_.max!==dn.max) diffs.push(`'${mgname}' max: ${do_.max} → ${dn.max}`);
+      const onlyNew=[...new Set(dn.options)].filter(o=>!do_.options.includes(o)).sort();
+      const onlyOld=[...new Set(do_.options)].filter(o=>!dn.options.includes(o)).sort();
       if (onlyNew.length) diffs.push(`'${mgname}' options ADDED: ${onlyNew.join(', ')}`);
       if (onlyOld.length) diffs.push(`'${mgname}' options REMOVED: ${onlyOld.join(', ')}`);
     }
-    if (diffs.length) fixed.push({ item: iname, group: d2.group, diffs });
+    if (diffs.length) fixed.push({item:iname,group:d2.group,diffs});
   }
-
-  for (const iname of Object.keys(items2).sort()) {
-    if (!items1[iname]) added.push({ item: iname, ...items2[iname] });
-  }
-  for (const iname of Object.keys(items1).sort()) {
-    if (!items2[iname]) removed.push({ item: iname, group: items1[iname].group });
-  }
-
-  return {
-    menu1: m1.name, menu2: m2.name,
-    updated1: data1.lastUpdated || '', updated2: data2.lastUpdated || '',
-    added, removed, fixed, guidChanges,
-  };
+  for (const iname of Object.keys(items2).sort()) if (!items1[iname]) added.push({item:iname,...items2[iname]});
+  for (const iname of Object.keys(items1).sort()) if (!items2[iname]) removed.push({item:iname,group:items1[iname].group});
+  return {menu1:m1.name,menu2:m2.name,updated1:data1.lastUpdated||'',updated2:data2.lastUpdated||'',added,removed,fixed,guidChanges};
 }
 
 // ── Sync logic ─────────────────────────────────────────────────────────────
-function computeSync(lData, sData) {
-  const lMg = lData.modifierGroupReferences || {};
-  const lMo = lData.modifierOptionReferences || {};
-  const sMg = sData.modifierGroupReferences || {};
-  const sMo = sData.modifierOptionReferences || {};
-
-  const lMenu = getMenu(lData, false);
-  const sMenu = getMenu(sData, true);
-  if (!lMenu) return { error: 'Could not find *Owner / Otter Menu in the Lansdale file.' };
-  if (!sMenu) return { error: 'Could not find Lansdale Clone 2 menu in the Sandbox file.' };
-
-  const lGrps = itemsByGroup(lMenu);
-  const sGrps = itemsByGroup(sMenu);
-  const tasks = { add: [], remove: [], fix: [] };
-
+function computeSync(lData,sData,opts={}) {
+  const lMg=lData.modifierGroupReferences||{},lMo=lData.modifierOptionReferences||{};
+  const sMg=sData.modifierGroupReferences||{},sMo=sData.modifierOptionReferences||{};
+  const lMenu=getMenu(lData,false,opts.lansdaleGuid),sMenu=getMenu(sData,true,opts.sandboxGuid);
+  if (!lMenu) return {error:'Could not find *Owner / Otter Menu in the Lansdale file.'};
+  if (!sMenu) return {error:'Could not find Lansdale Clone 2 menu in the Sandbox file.'};
+  const lGrps=itemsByGroup(lMenu),sGrps=itemsByGroup(sMenu);
+  const tasks={add:[],remove:[],fix:[]};
   for (const gname of Object.keys(lGrps).sort()) {
-    const lItems = lGrps[gname];
-    const sItems = sGrps[gname] || {};
+    const lItems=lGrps[gname],sItems=sGrps[gname]||{};
     for (const iname of Object.keys(lItems).sort()) {
       if (!sItems[iname]) {
-        tasks.add.push({ group: gname, item: iname, price: lItems[iname].price || 0, mgs: getModGroups(lItems[iname], lMg, lMo) });
+        tasks.add.push({group:gname,item:iname,price:lItems[iname].price||0,mgs:getModGroups(lItems[iname],lMg,lMo)});
       } else {
-        const lMgs = getModGroups(lItems[iname], lMg, lMo);
-        const sMgs = getModGroups(sItems[iname], sMg, sMo);
-        const lBy = Object.fromEntries(lMgs.map(m => [m.name, m]));
-        const sBy = Object.fromEntries(sMgs.map(m => [m.name, m]));
-        const allMg = [...new Set([...Object.keys(lBy), ...Object.keys(sBy)])].sort();
-        const diffs = [];
+        const lMgs=getModGroups(lItems[iname],lMg,lMo),sMgs=getModGroups(sItems[iname],sMg,sMo);
+        const lBy=Object.fromEntries(lMgs.map(m=>[m.name,m]));
+        const sBy=Object.fromEntries(sMgs.map(m=>[m.name,m]));
+        const allMg=[...new Set([...Object.keys(lBy),...Object.keys(sBy)])].sort();
+        const diffs=[];
         for (const mgname of allMg) {
-          if (lBy[mgname] && !sBy[mgname]) { diffs.push(`Add mod group: '${mgname}'`); continue; }
-          if (sBy[mgname] && !lBy[mgname]) { diffs.push(`Remove mod group: '${mgname}'`); continue; }
-          const ld = lBy[mgname], sd = sBy[mgname];
-          if (ld.required !== sd.required) diffs.push(`'${mgname}' required: ${sd.required} → ${ld.required}`);
-          if (ld.min !== sd.min) diffs.push(`'${mgname}' min: ${sd.min} → ${ld.min}`);
-          if (ld.max !== sd.max) diffs.push(`'${mgname}' max: ${sd.max} → ${ld.max}`);
-          const onlyL = ld.options.filter(o => !sd.options.includes(o)).sort();
-          const onlyS = sd.options.filter(o => !ld.options.includes(o)).sort();
+          if (lBy[mgname]&&!sBy[mgname]) { diffs.push(`Add mod group: '${mgname}'`); continue; }
+          if (sBy[mgname]&&!lBy[mgname]) { diffs.push(`Remove mod group: '${mgname}'`); continue; }
+          const ld=lBy[mgname],sd=sBy[mgname];
+          if (ld.required!==sd.required) diffs.push(`'${mgname}' required: ${sd.required} → ${ld.required}`);
+          if (ld.min!==sd.min) diffs.push(`'${mgname}' min: ${sd.min} → ${ld.min}`);
+          if (ld.max!==sd.max) diffs.push(`'${mgname}' max: ${sd.max} → ${ld.max}`);
+          const onlyL=ld.options.filter(o=>!sd.options.includes(o)).sort();
+          const onlyS=sd.options.filter(o=>!ld.options.includes(o)).sort();
           if (onlyL.length) diffs.push(`'${mgname}' add options: ${onlyL.join(', ')}`);
           if (onlyS.length) diffs.push(`'${mgname}' remove options: ${onlyS.join(', ')}`);
         }
-        if (diffs.length) tasks.fix.push({ group: gname, item: iname, diffs });
+        if (diffs.length) tasks.fix.push({group:gname,item:iname,diffs});
       }
     }
-    for (const iname of Object.keys(sItems).sort()) {
-      if (!lItems[iname]) tasks.remove.push({ group: gname, item: iname });
+    for (const iname of Object.keys(sItems).sort()) if (!lItems[iname]) tasks.remove.push({group:gname,item:iname});
+  }
+  return {lUpdated:lData.lastUpdated||'',sUpdated:sData.lastUpdated||'',tasks};
+}
+
+// ── Import generator logic ─────────────────────────────────────────────────
+const IMPORT_COLS = ['Operation','Entity type','Name','PLU','Version ID or operation ID','Operation ID',
+  'POS Name','Kitchen Name','Item description','Pricing strategy','Button color','Price',
+  'Sales category multiLocation ID','Location-specific target ID','SKU',
+  'Location-specific prep station multiLocation IDs','Tax rate multiLocation IDs',
+  'Target ID','Owner ID','Visible to POS','Visible to Kiosk, Toast Order and Pay',
+  'Visible to Toast Online Ordering, Toast Takeout App','Visible to online ordering partners',
+  'Modifier name','Modifier target ID','Modifier owner ID','Default modifier',
+  'Parent entity type','Parent version ID OR operation ID'];
+const REF_COLS = ['Number','Available at (Target) Name','Editable by (Owner) Name','Menu Group(s)',
+  'Sales Category Name','Location-specific "Applies to" name','Location-specific prep time',
+  'Location-specific pricing strategy','Location-specific base price','Menu multiLocation ID',
+  'Menu name','Menu price','Time price GUID','Time price','Time price days',
+  'Time price start','Time price end'];
+const ALL_COLS = [...IMPORT_COLS, ...REF_COLS];
+
+function buildExportLookup(rows) {
+  const byName = {};
+  if (!rows) return byName;
+  for (const row of rows) {
+    const name = (row['Name']||row['name']||'').trim();
+    if (!name) continue;
+    const menuName = (row['Menu name']||row['Menu Name']||'').trim();
+    const isDoorDash = menuName === 'Door Dash';
+    if (!byName[name] || (!isDoorDash && byName[name]._dd)) {
+      byName[name] = {...row, _dd: isDoorDash};
     }
   }
-
-  return { lUpdated: lData.lastUpdated || '', sUpdated: sData.lastUpdated || '', tasks };
+  return byName;
 }
 
-// ── Run diff ───────────────────────────────────────────────────────────────
+function blankRow() { const r={}; ALL_COLS.forEach(c=>r[c]=''); return r; }
+
+function copyRef(row, expRow) {
+  REF_COLS.forEach(c => { if (expRow && expRow[c]!==undefined) row[c]=expRow[c]; });
+}
+
+function computeImport(lData, sData, opts={}) {
+  const lMenu=getMenu(lData,false,opts.lansdaleGuid);
+  const sMenu=getMenu(sData,true,opts.sandboxGuid,opts.cloneMenuName);
+  if (!lMenu) return {error:'Could not find *Owner / Otter Menu in Lansdale file.'};
+  if (!sMenu) return {error:'Could not find Lansdale Clone 2 in Sandbox file.'};
+
+  const lMg=lData.modifierGroupReferences||{},lMo=lData.modifierOptionReferences||{};
+  const lItems=flatItems(lMenu,lMg,lMo);
+  const sItems=flatItems(sMenu,{},{});
+  const mbItems=getMBMenuItems(sData,opts.mbMenuName);
+  const clone2Groups=getClone2Groups(sData);
+  const expLookup=buildExportLookup(exportRows);
+
+  const importRows=[];
+  let opId=0;
+
+  // ATTACHes and CREATEs for items in Lansdale but not Sandbox
+  for (const [name, info] of Object.entries(lItems)) {
+    if (sItems[name]) {
+      // Check price change → UPDATE
+      if (Math.abs((info.price||0)-(sItems[name].price||0))>0.01) {
+        const row=blankRow();
+        row['Operation']='UPDATE'; row['Entity type']='MENU_ITEM';
+        row['Name']=name; row['Version ID or operation ID']=sItems[name].guid;
+        row['Operation ID']=opId++;
+        row['Price']=info.price; row['Pricing strategy']='MENU_SPECIFIC';
+        row['Visible to POS']=row['Visible to Kiosk, Toast Order and Pay']=
+        row['Visible to Toast Online Ordering, Toast Takeout App']=
+        row['Visible to online ordering partners']='TRUE';
+        copyRef(row, expLookup[name]);
+        importRows.push(row);
+      }
+      continue;
+    }
+    const tGroup=bestGroup(info.group, clone2Groups);
+    const tGroupGuid=clone2Groups[tGroup]||'';
+    const expRow=expLookup[name]||{};
+    const row=blankRow();
+    row['Entity type']='MENU_ITEM';
+    row['Operation ID']=opId++;
+    row['Visible to POS']=row['Visible to Kiosk, Toast Order and Pay']=
+    row['Visible to Toast Online Ordering, Toast Takeout App']=
+    row['Visible to online ordering partners']='TRUE';
+    row['Parent entity type']='MENU_GROUP';
+    row['Parent version ID OR operation ID']=tGroupGuid;
+    if (mbItems[name]) {
+      row['Operation']='ATTACH';
+      row['Version ID or operation ID']=mbItems[name];
+    } else {
+      row['Operation']='CREATE'; row['Name']=name;
+      row['Price']=info.price||0;
+      row['Pricing strategy']=expRow['Pricing strategy']||'MENU_SPECIFIC';
+      row['POS Name']=expRow['POS Name']||expRow['POS name']||'';
+      row['Kitchen Name']=expRow['Kitchen Name']||expRow['Kitchen name']||'';
+      row['Sales category multiLocation ID']=expRow['Sales category multiLocation ID']||'';
+      row['Target ID']=expRow['Target ID']||expRow['Target GUID']||'';
+      row['Owner ID']=expRow['Owner ID']||expRow['Owner GUID']||'';
+    }
+    copyRef(row, expRow);
+    importRows.push(row);
+  }
+
+  return { rows: importRows, clone2Groups };
+}
+
+// ── Run functions ──────────────────────────────────────────────────────────
 async function runDiff() {
-  const errEl = document.getElementById('diff-err');
-  errEl.innerHTML = '';
-  if (!files['zone-d1'] || !files['zone-d2']) {
-    errEl.innerHTML = '<div class="error-msg">Please upload both files.</div>'; return;
-  }
-  const btn = document.querySelector('#panel-diff .run-btn');
-  const spin = document.getElementById('diff-spin');
-  btn.disabled = true; spin.classList.add('running');
+  const errEl=document.getElementById('diff-err'); errEl.innerHTML='';
+  if (!files['zone-d1']||!files['zone-d2']) { errEl.innerHTML='<div class="error-msg">Please upload both files.</div>'; return; }
+  const btn=document.querySelector('#panel-diff .run-btn'), spin=document.getElementById('diff-spin');
+  btn.disabled=true; spin.classList.add('running');
   try {
-    const [d1, d2] = await Promise.all([readJSON(files['zone-d1']), readJSON(files['zone-d2'])]);
-    const isSandbox1 = document.getElementById('sandbox1-check').checked;
-    const isSandbox2 = document.getElementById('sandbox2-check').checked;
-    const result = computeDiff(d1, d2, isSandbox1, isSandbox2);
-    if (result.error) { errEl.innerHTML = `<div class="error-msg">${result.error}</div>`; }
-    else renderDiff(result);
-  } catch(e) {
-    errEl.innerHTML = `<div class="error-msg">Could not read files: ${e.message}</div>`;
-  }
-  btn.disabled = false; spin.classList.remove('running');
+    const [d1,d2]=await Promise.all([readJSON(files['zone-d1']),readJSON(files['zone-d2'])]);
+    const guidA=document.getElementById('diff-menu-guid-a')?.value.trim()||'';
+    const guidB=document.getElementById('diff-menu-guid-b')?.value.trim()||'';
+    const r=computeDiff(d1,d2,document.getElementById('sandbox1-check').checked,document.getElementById('sandbox2-check').checked,guidA,guidB);
+    if (r.error) errEl.innerHTML=`<div class="error-msg">${r.error}</div>`;
+    else renderDiff(r);
+  } catch(e) { errEl.innerHTML=`<div class="error-msg">Could not read files: ${e.message}</div>`; }
+  btn.disabled=false; spin.classList.remove('running');
 }
 
-// ── Run sync ───────────────────────────────────────────────────────────────
 async function runSync() {
-  const errEl = document.getElementById('sync-err');
-  errEl.innerHTML = '';
-  if (!files['zone-l'] || !files['zone-s']) {
-    errEl.innerHTML = '<div class="error-msg">Please upload both files.</div>'; return;
-  }
-  const btn = document.querySelector('#panel-sync .run-btn');
-  const spin = document.getElementById('sync-spin');
-  btn.disabled = true; spin.classList.add('running');
+  const errEl=document.getElementById('sync-err'); errEl.innerHTML='';
+  if (!files['zone-l']||!files['zone-s']) { errEl.innerHTML='<div class="error-msg">Please upload both files.</div>'; return; }
+  const btn=document.querySelector('#panel-sync .run-btn'), spin=document.getElementById('sync-spin');
+  btn.disabled=true; spin.classList.add('running');
   try {
-    const [lData, sData] = await Promise.all([readJSON(files['zone-l']), readJSON(files['zone-s'])]);
-    const result = computeSync(lData, sData);
-    if (result.error) { errEl.innerHTML = `<div class="error-msg">${result.error}</div>`; }
-    else renderSync(result);
-  } catch(e) {
-    errEl.innerHTML = `<div class="error-msg">Could not read files: ${e.message}</div>`;
-  }
-  btn.disabled = false; spin.classList.remove('running');
+    const [lData,sData]=await Promise.all([readJSON(files['zone-l']),readJSON(files['zone-s'])]);
+    const syncOpts = {
+      lansdaleGuid: document.getElementById('sync-lansdale-guid')?.value.trim()||'',
+      sandboxGuid:  document.getElementById('sync-sandbox-guid')?.value.trim()||'',
+    };
+    const r=computeSync(lData,sData,syncOpts);
+    if (r.error) errEl.innerHTML=`<div class="error-msg">${r.error}</div>`;
+    else renderSync(r);
+  } catch(e) { errEl.innerHTML=`<div class="error-msg">Could not read files: ${e.message}</div>`; }
+  btn.disabled=false; spin.classList.remove('running');
 }
 
-// ── Render diff ────────────────────────────────────────────────────────────
-function renderDiff(data) {
-  const fmtDate = s => s ? s.replace('T',' ').slice(0,16)+' UTC' : '—';
-  let html = `
-    <div class="meta-bar">
-      <span><strong>${esc(data.menu1)}</strong> — ${fmtDate(data.updated1)}</span>
-      <span><strong>${esc(data.menu2)}</strong> — ${fmtDate(data.updated2)}</span>
-    </div>
-    <div class="result-stats">
-      <div class="stat-card"><div class="stat-card-label">Added</div><div class="stat-card-val" style="color:var(--green)">${data.added.length}</div></div>
-      <div class="stat-card"><div class="stat-card-label">Removed</div><div class="stat-card-val" style="color:var(--red)">${data.removed.length}</div></div>
-      <div class="stat-card"><div class="stat-card-label">Modifier changes</div><div class="stat-card-val" style="color:var(--amber)">${data.fixed.length}</div></div>
-      <div class="stat-card"><div class="stat-card-label">GUID changes</div><div class="stat-card-val" style="color:var(--blue)">${data.guidChanges.length}</div></div>
-    </div>`;
+async function runImport() {
+  const errEl=document.getElementById('imp-err'); errEl.innerHTML='';
+  if (!files['zone-il']||!files['zone-is']) { errEl.innerHTML='<div class="error-msg">Please upload both JSON files.</div>'; return; }
+  const btn=document.getElementById('imp-run-btn'), spin=document.getElementById('imp-spin');
+  btn.disabled=true; spin.classList.add('running');
+  try {
+    const [lData,sData]=await Promise.all([readJSON(files['zone-il']),readJSON(files['zone-is'])]);
+    const impOpts = {
+      lansdaleGuid:  document.getElementById('imp-lansdale-guid')?.value.trim()||'',
+      sandboxGuid:   document.getElementById('imp-sandbox-menu-guid')?.value.trim()||'',
+      mbMenuName:    document.getElementById('imp-mb-menu-name')?.value.trim()||'MB Menu',
+      cloneMenuName: document.getElementById('imp-clone-menu-name')?.value.trim()||'Lansdale Clone 2',
+    };
+    const r=computeImport(lData,sData,impOpts);
+    if (r.error) errEl.innerHTML=`<div class="error-msg">${r.error}</div>`;
+    else renderImport(r);
+  } catch(e) { errEl.innerHTML=`<div class="error-msg">Error: ${e.message}</div>`; }
+  btn.disabled=false; spin.classList.remove('running');
+}
 
+// ── Render: Diff ───────────────────────────────────────────────────────────
+function renderDiff(data) {
+  const fmtDate=s=>s?s.replace('T',' ').slice(0,16)+' UTC':'—';
+  let html=`<div class="meta-bar">
+    <span><strong>${esc(data.menu1)}</strong> — ${fmtDate(data.updated1)}</span>
+    <span><strong>${esc(data.menu2)}</strong> — ${fmtDate(data.updated2)}</span>
+  </div>
+  <div class="result-stats">
+    <div class="stat-card"><div class="stat-card-label">Added</div><div class="stat-card-val" style="color:var(--green)">${data.added.length}</div></div>
+    <div class="stat-card"><div class="stat-card-label">Removed</div><div class="stat-card-val" style="color:var(--red)">${data.removed.length}</div></div>
+    <div class="stat-card"><div class="stat-card-label">Modifier changes</div><div class="stat-card-val" style="color:var(--amber)">${data.fixed.length}</div></div>
+    <div class="stat-card"><div class="stat-card-label">GUID changes</div><div class="stat-card-val" style="color:var(--blue)">${data.guidChanges.length}</div></div>
+  </div>`;
   if (data.added.length) {
-    html += section('Added in File 2', data.added.length);
-    data.added.forEach((t,i) => {
-      const hasMgs = t.mgs?.length;
-      html += `<div class="item-row${hasMgs?' expandable':''}" ${hasMgs?`onclick="toggle('da${i}','da-t${i}')"`:''}><div class="item-head">
+    html+=section('Added in File 2',data.added.length);
+    data.added.forEach((t,i)=>{
+      const hasMgs=t.mgs?.length;
+      html+=`<div class="item-row${hasMgs?' expandable':''}"${hasMgs?` onclick="toggle('da${i}','da-t${i}')"`:''}><div class="item-head">
         <span class="badge b-add">Added</span><span class="item-name">${esc(t.item)}</span>
         <span class="item-group">${esc(t.group)}</span>
         <span class="item-price">$${Number(t.price).toFixed(2)}</span>
         ${hasMgs?`<span class="expand-toggle" id="da-t${i}">▸ modifiers</span>`:''}
       </div>${hasMgs?`<div class="item-detail" id="da${i}">${renderMgs(t.mgs)}</div>`:''}</div>`;
     });
-    html += '</div>';
+    html+='</div>';
   }
-
   if (data.removed.length) {
-    html += section('Removed in File 2', data.removed.length);
-    data.removed.forEach(t => {
-      html += `<div class="item-row"><div class="item-head"><span class="badge b-remove">Removed</span><span class="item-name">${esc(t.item)}</span><span class="item-group">${esc(t.group)}</span></div></div>`;
+    html+=section('Removed in File 2',data.removed.length);
+    data.removed.forEach(t=>{
+      html+=`<div class="item-row"><div class="item-head"><span class="badge b-remove">Removed</span><span class="item-name">${esc(t.item)}</span><span class="item-group">${esc(t.group)}</span></div></div>`;
     });
-    html += '</div>';
+    html+='</div>';
   }
-
   if (data.fixed.length) {
-    html += section('Modifier changes', data.fixed.length);
-    data.fixed.forEach((t,i) => {
-      html += `<div class="item-row expandable" onclick="toggle('df${i}','df-t${i}')"><div class="item-head">
+    html+=section('Modifier changes',data.fixed.length);
+    data.fixed.forEach((t,i)=>{
+      html+=`<div class="item-row expandable" onclick="toggle('df${i}','df-t${i}')"><div class="item-head">
         <span class="badge b-fix">Modified</span><span class="item-name">${esc(t.item)}</span>
         <span class="item-group">${esc(t.group)}</span>
         <span class="expand-toggle" id="df-t${i}">▸ changes</span>
       </div><div class="item-detail" id="df${i}"><div class="diff-list">${t.diffs.map(d=>`<div class="diff-item">${esc(d)}</div>`).join('')}</div></div></div>`;
     });
-    html += '</div>';
+    html+='</div>';
   }
-
   if (data.guidChanges.length) {
-    html += section('GUID changes', data.guidChanges.length);
-    data.guidChanges.forEach(c => {
-      html += `<div class="item-row"><div class="item-head"><span class="badge b-guid">GUID</span><span class="item-name">${esc(c.item)}</span></div>
-      <div style="font-size:11px;color:var(--text3);margin-top:3px">Old: ${c.old}<br>New: ${c.new}</div></div>`;
+    html+=section('GUID changes',data.guidChanges.length);
+    data.guidChanges.forEach(c=>{
+      html+=`<div class="item-row"><div class="item-head"><span class="badge b-guid">GUID</span><span class="item-name">${esc(c.item)}</span></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:3px">Old: ${c.old}<br>New: ${c.new_}</div></div>`;
     });
-    html += '</div>';
+    html+='</div>';
   }
-
-  if (!data.added.length && !data.removed.length && !data.fixed.length && !data.guidChanges.length) {
-    html += '<div class="empty">No differences found — menus are identical.</div>';
+  if (!data.added.length&&!data.removed.length&&!data.fixed.length&&!data.guidChanges.length) {
+    html+='<div class="empty">No differences found — menus are identical.</div>';
   }
-
-  document.getElementById('diff-out').innerHTML = html;
+  document.getElementById('diff-out').innerHTML=html;
 }
 
-// ── Render sync ────────────────────────────────────────────────────────────
-let clState = {}, clItems = [], clFilter = 'all';
-
+// ── Render: Sync ───────────────────────────────────────────────────────────
+let clState={},clItems=[],clFilter='all';
 function renderSync(data) {
-  const { tasks, lUpdated, sUpdated } = data;
-  clItems = []; clState = {};
-
-  const badgeMap = { add: '<span class="badge b-add">Add</span>', remove: '<span class="badge b-remove">Remove</span>', fix: '<span class="badge b-fix">Fix</span>' };
-
-  tasks.add.forEach((t,i) => {
-    const id = `a${i}`;
-    const sub = t.mgs.length ? t.mgs.map(m => `${m.name} (${m.required==='REQUIRED'?'Required':'Optional'})`).join(' · ') : 'No modifier groups';
-    clItems.push({ id, type:'add', group:t.group, name:t.item, price:t.price, sub });
-    clState[id] = false;
+  const {tasks,lUpdated,sUpdated}=data;
+  clItems=[]; clState={};
+  tasks.add.forEach((t,i)=>{
+    const id=`a${i}`;
+    const sub=t.mgs.length?t.mgs.map(m=>`${m.name} (${m.required==='REQUIRED'?'Required':'Optional'})`).join(' · '):'No modifier groups';
+    clItems.push({id,type:'add',group:t.group,name:t.item,price:t.price,sub}); clState[id]=false;
   });
-  tasks.remove.forEach((t,i) => {
-    const id = `r${i}`;
-    clItems.push({ id, type:'remove', group:t.group, name:t.item, price:0, sub:'In Sandbox but not in Lansdale. Remove.' });
-    clState[id] = false;
+  tasks.remove.forEach((t,i)=>{
+    const id=`r${i}`;
+    clItems.push({id,type:'remove',group:t.group,name:t.item,price:0,sub:'In Sandbox but not in Lansdale. Remove.'}); clState[id]=false;
   });
-  tasks.fix.forEach((t,i) => {
-    const id = `f${i}`;
-    clItems.push({ id, type:'fix', group:t.group, name:t.item, price:0, sub:t.diffs.join(' · ') });
-    clState[id] = false;
+  tasks.fix.forEach((t,i)=>{
+    const id=`f${i}`;
+    clItems.push({id,type:'fix',group:t.group,name:t.item,price:0,sub:t.diffs.join(' · ')}); clState[id]=false;
   });
-
-  const total = clItems.length;
-  const fmtDate = s => s ? s.replace('T',' ').slice(0,16)+' UTC' : '—';
-
-  document.getElementById('sync-out').innerHTML = `
+  const total=clItems.length;
+  const fmtDate=s=>s?s.replace('T',' ').slice(0,16)+' UTC':'—';
+  document.getElementById('sync-out').innerHTML=`
     <div class="meta-bar">
       <span><strong>Lansdale</strong> — ${fmtDate(lUpdated)}</span>
       <span><strong>Sandbox</strong> — ${fmtDate(sUpdated)}</span>
@@ -565,81 +825,122 @@ function renderSync(data) {
       <button class="reset-btn" onclick="resetCl()">reset</button>
     </div>
     <div id="cl-list"></div>`;
-
   drawChecklist();
 }
 
 function drawChecklist() {
-  const el = document.getElementById('cl-list');
-  if (!el) return;
-  const filtered = clFilter === 'all' ? clItems : clItems.filter(i => i.type === clFilter);
-  const byGroup = {};
-  filtered.forEach(i => { (byGroup[i.group] = byGroup[i.group] || []).push(i); });
-
-  let html = '';
-  for (const [gname, rows] of Object.entries(byGroup)) {
-    const done = rows.filter(r => clState[r.id]).length;
-    html += `<div class="section"><div class="section-hdr">${esc(gname)} <span class="section-cnt">${done}/${rows.length}</span></div>`;
-    rows.forEach(item => {
-      const checked = clState[item.id];
-      const bm = { add:'<span class="badge b-add">Add</span>', remove:'<span class="badge b-remove">Remove</span>', fix:'<span class="badge b-fix">Fix</span>' };
-      html += `<div class="checklist-item${checked?' done':''}" onclick="chk('${item.id}')">
-        <input type="checkbox" ${checked?'checked':''} onclick="event.stopPropagation();chk('${item.id}')">
+  const el=document.getElementById('cl-list'); if (!el) return;
+  const filtered=clFilter==='all'?clItems:clItems.filter(i=>i.type===clFilter);
+  const byGroup={};
+  filtered.forEach(i=>{ (byGroup[i.group]=byGroup[i.group]||[]).push(i); });
+  let html='';
+  const bm={add:'<span class="badge b-add">Add</span>',remove:'<span class="badge b-remove">Remove</span>',fix:'<span class="badge b-fix">Fix</span>'};
+  for (const [gname,rows] of Object.entries(byGroup)) {
+    const done=rows.filter(r=>clState[r.id]).length;
+    html+=`<div class="section"><div class="section-hdr">${esc(gname)} <span class="section-cnt">${done}/${rows.length}</span></div>`;
+    rows.forEach(item=>{
+      const checked=clState[item.id];
+      html+=`<div class="checklist-item${checked?' done':''}" onclick="chk('${item.id}')">
+        <input type="checkbox"${checked?' checked':''} onclick="event.stopPropagation();chk('${item.id}')">
         <div>
           <div class="ci-name">${bm[item.type]} ${esc(item.name)}${item.price?' <span style="font-weight:400;color:var(--text2)">$'+Number(item.price).toFixed(2)+'</span>':''}</div>
           <div class="ci-sub">${esc(item.sub)}</div>
         </div>
       </div>`;
     });
-    html += '</div>';
+    html+='</div>';
   }
-  if (!html) html = '<div class="empty">No items in this category.</div>';
-  el.innerHTML = html;
-  updateProg();
+  if (!html) html='<div class="empty">No items in this category.</div>';
+  el.innerHTML=html; updateProg();
+}
+function chk(id){clState[id]=!clState[id];drawChecklist();}
+function setFilter(f,btn){clFilter=f;document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');drawChecklist();}
+function resetCl(){Object.keys(clState).forEach(k=>clState[k]=false);drawChecklist();}
+function updateProg(){
+  const total=clItems.length,done=Object.values(clState).filter(Boolean).length,pct=total?Math.round(done/total*100):0;
+  const l=document.getElementById('cl-lbl'),p=document.getElementById('cl-pct'),b=document.getElementById('cl-bar');
+  if(l)l.textContent=`${done} of ${total} done`;if(p)p.textContent=`${pct}%`;if(b)b.style.width=pct+'%';
 }
 
-function chk(id) { clState[id] = !clState[id]; drawChecklist(); }
-function setFilter(f, btn) {
-  clFilter = f;
-  document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
-  drawChecklist();
-}
-function resetCl() { Object.keys(clState).forEach(k => clState[k] = false); drawChecklist(); }
-function updateProg() {
-  const total = clItems.length;
-  const done = Object.values(clState).filter(Boolean).length;
-  const pct = total ? Math.round(done/total*100) : 0;
-  const l = document.getElementById('cl-lbl');
-  const p = document.getElementById('cl-pct');
-  const b = document.getElementById('cl-bar');
-  if (l) l.textContent = `${done} of ${total} done`;
-  if (p) p.textContent = `${pct}%`;
-  if (b) b.style.width = pct + '%';
+// ── Render: Import ─────────────────────────────────────────────────────────
+let _impRows=null;
+function renderImport(data) {
+  const {rows,clone2Groups}=data;
+  _impRows=rows;
+  const attachCount=rows.filter(r=>r['Operation']==='ATTACH').length;
+  const createCount=rows.filter(r=>r['Operation']==='CREATE').length;
+  const updateCount=rows.filter(r=>r['Operation']==='UPDATE').length;
+  const el=document.getElementById('imp-out');
+  if (!rows.length) {
+    el.innerHTML='<div class="empty">✅ No changes needed — Sandbox matches Lansdale!</div>'; return;
+  }
+  let html=`<div class="result-stats">
+    <div class="stat-card"><div class="stat-card-label">ATTACH</div><div class="stat-card-val" style="color:var(--blue)">${attachCount}</div></div>
+    <div class="stat-card"><div class="stat-card-label">CREATE</div><div class="stat-card-val" style="color:var(--green)">${createCount}</div></div>
+    <div class="stat-card"><div class="stat-card-label">UPDATE</div><div class="stat-card-val" style="color:var(--amber)">${updateCount}</div></div>
+    <div class="stat-card"><div class="stat-card-label">Total rows</div><div class="stat-card-val">${rows.length}</div></div>
+  </div>
+  <div style="margin-bottom:1rem;">
+    <button class="run-btn" onclick="downloadImport()">⬇ Download Import CSV</button>
+  </div>
+  <div class="imp-table-wrap"><table class="imp-table"><thead><tr>
+    <th>Op</th><th>Item</th><th>Target Group</th><th>Price</th><th>GUID</th>
+  </tr></thead><tbody>`;
+  const groupByGuid=Object.fromEntries(Object.entries(clone2Groups).map(([n,g])=>[g,n]));
+  for (const row of rows) {
+    const op=row['Operation'];
+    const cls=op==='ATTACH'?'b-attach':op==='CREATE'?'b-create':'b-update';
+    const group=groupByGuid[row['Parent version ID OR operation ID']]||'';
+    const guid=row['Version ID or operation ID']||'';
+    html+=`<tr>
+      <td><span class="badge ${cls}">${op}</span></td>
+      <td>${esc(row['Name']||'')}</td>
+      <td style="color:var(--text2);font-size:11px">${esc(group)}</td>
+      <td>${row['Price']?'$'+parseFloat(row['Price']).toFixed(2):''}</td>
+      <td style="color:var(--text3);font-size:10px;font-family:monospace">${guid.slice(0,8)}…</td>
+    </tr>`;
+  }
+  html+=`</tbody></table></div>`;
+  el.innerHTML=html;
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────
-function toggle(id, toggleId) {
-  const el = document.getElementById(id);
-  if (!el) return;
+function downloadImport() {
+  if (!_impRows||!_impRows.length) return;
+  const lines=[ALL_COLS.map(csvCell).join(',')];
+  for (const row of _impRows) lines.push(ALL_COLS.map(c=>csvCell(row[c]??'')).join(','));
+  const blob=new Blob([lines.join('\n')],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`sandbox_import_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function csvCell(v){
+  const s=String(v??'');
+  return (s.includes(',')||s.includes('"')||s.includes('\n'))?'"'+s.replace(/"/g,'""')+'"':s;
+}
+
+// ── Shared helpers ─────────────────────────────────────────────────────────
+function toggleAdv(id){
+  const el=document.getElementById(id);
+  if(el) el.classList.toggle('open');
+}
+
+function toggle(id,toggleId){
+  const el=document.getElementById(id);if(!el)return;
   el.classList.toggle('open');
-  const t = document.getElementById(toggleId);
-  if (t) t.textContent = el.classList.contains('open') ? '▾ hide' : '▸ show';
+  const t=document.getElementById(toggleId);if(t)t.textContent=el.classList.contains('open')?'▾ hide':'▸ show';
 }
-function renderMgs(mgs) {
-  return (mgs||[]).map(mg => {
-    const req = mg.required === 'REQUIRED' ? '<span class="b-req">REQUIRED</span>' : '<span class="b-opt">optional</span>';
-    const mm = (mg.min != null || mg.max != null) ? ` <span style="font-size:10px;color:var(--text3)">min:${mg.min} max:${mg.max}</span>` : '';
-    const opts = (mg.options||[]).map(o => `<span class="opt-pill">${esc(o)}</span>`).join('');
+function renderMgs(mgs){
+  return (mgs||[]).map(mg=>{
+    const req=mg.required==='REQUIRED'?'<span class="b-req">REQUIRED</span>':'<span class="b-opt">optional</span>';
+    const mm=(mg.min!=null||mg.max!=null)?` <span style="font-size:10px;color:var(--text3)">min:${mg.min} max:${mg.max}</span>`:'';
+    const opts=(mg.options||[]).map(o=>`<span class="opt-pill">${esc(o)}</span>`).join('');
     return `<div class="mg-row"><div class="mg-name">${esc(mg.name)} ${req}${mm}</div><div class="mg-opts">${opts}</div></div>`;
   }).join('');
 }
-function section(title, count) {
-  return `<div class="section"><div class="section-hdr">${title} <span class="section-cnt">${count}</span></div>`;
-}
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function section(title,count){return `<div class="section"><div class="section-hdr">${title} <span class="section-cnt">${count}</span></div>`;}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 </script>
 </body>
 </html>
