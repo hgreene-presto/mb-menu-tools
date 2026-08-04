@@ -569,7 +569,7 @@ function computeSync(lData,sData,opts={}) {
 
 // ── Import generator logic ─────────────────────────────────────────────────
 const IMPORT_COLS = ['Operation','Entity type','Name','PLU','Version ID or operation ID','Operation ID',
-  'POS Name','Kitchen Name','Item description','Pricing strategy','Button color','Price',
+  'POS Name','Kitchen Name','Item description','Pricing strategy or method','Button color','Price',
   'Sales category multiLocation ID','SKU','Tax rate multiLocation IDs',
   'Visible to POS','Visible to Kiosk, Toast Order and Pay',
   'Visible to Toast Online Ordering, Toast Takeout App','Visible to online ordering partners',
@@ -628,7 +628,7 @@ function computeImport(lData, sData, opts={}) {
         row['Operation']='UPDATE'; row['Entity type']='MENU_ITEM';
         row['Name']=name; row['Version ID or operation ID']=sItems[name].guid;
         row['Operation ID']=opId++;
-        row['Price']=info.price; row['Pricing strategy']='MENU_SPECIFIC';
+        row['Price']=info.price; row['Pricing strategy or method']='MENU_SPECIFIC';
         row['Visible to POS']=row['Visible to Kiosk, Toast Order and Pay']=
         row['Visible to Toast Online Ordering, Toast Takeout App']=
         row['Visible to online ordering partners']='TRUE';
@@ -655,7 +655,7 @@ function computeImport(lData, sData, opts={}) {
     } else {
       row['Operation']='CREATE'; row['Name']=name;
       row['Price']=info.price||0;
-      row['Pricing strategy']=expRow['Pricing strategy']||'MENU_SPECIFIC';
+      row['Pricing strategy or method']=expRow['Pricing strategy or method'] || expRow['Pricing strategy']||'MENU_SPECIFIC';
       row['POS Name']=expRow['POS Name']||expRow['POS name']||'';
       row['Kitchen Name']=expRow['Kitchen Name']||expRow['Kitchen name']||'';
       row['Sales category multiLocation ID']=expRow['Sales category multiLocation ID']||'';
