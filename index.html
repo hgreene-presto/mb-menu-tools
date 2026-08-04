@@ -570,18 +570,13 @@ function computeSync(lData,sData,opts={}) {
 // ── Import generator logic ─────────────────────────────────────────────────
 const IMPORT_COLS = ['Operation','Entity type','Name','PLU','Version ID or operation ID','Operation ID',
   'POS Name','Kitchen Name','Item description','Pricing strategy','Button color','Price',
-  'Sales category multiLocation ID','Location-specific target ID','SKU',
-  'Location-specific prep station multiLocation IDs','Tax rate multiLocation IDs',
-  'Target ID','Owner ID','Visible to POS','Visible to Kiosk, Toast Order and Pay',
+  'Sales category multiLocation ID','SKU','Tax rate multiLocation IDs',
+  'Visible to POS','Visible to Kiosk, Toast Order and Pay',
   'Visible to Toast Online Ordering, Toast Takeout App','Visible to online ordering partners',
   'Modifier name','Modifier target ID','Modifier owner ID','Default modifier',
   'Parent entity type','Parent version ID OR operation ID'];
-const REF_COLS = ['Number','Available at (Target) Name','Editable by (Owner) Name','Menu Group(s)',
-  'Sales Category Name','Location-specific "Applies to" name','Location-specific prep time',
-  'Location-specific pricing strategy','Location-specific base price','Menu multiLocation ID',
-  'Menu name','Menu price','Time price GUID','Time price','Time price days',
-  'Time price start','Time price end'];
-const ALL_COLS = [...IMPORT_COLS, ...REF_COLS];
+const REF_COLS = [];
+const ALL_COLS = [...IMPORT_COLS];
 
 function buildExportLookup(rows) {
   const byName = {};
@@ -601,7 +596,11 @@ function buildExportLookup(rows) {
 function blankRow() { const r={}; ALL_COLS.forEach(c=>r[c]=''); return r; }
 
 function copyRef(row, expRow) {
-  REF_COLS.forEach(c => { if (expRow && expRow[c]!==undefined) row[c]=expRow[c]; });
+  const skip = new Set(['Available at (Target) Name','Editable by (Owner) Name',
+    'Location-specific "Applies to" name','Location-specific prep time',
+    'Location-specific pricing strategy','Location-specific base price',
+    'Location-specific target ID','Location-specific prep station multiLocation IDs']);
+  REF_COLS.forEach(c => { if (!skip.has(c) && expRow && expRow[c]!==undefined) row[c]=expRow[c]; });
 }
 
 function computeImport(lData, sData, opts={}) {
@@ -665,6 +664,9 @@ function computeImport(lData, sData, opts={}) {
       row['Target ID']='';
       row['Owner ID']='';
     }
+    // Clear all location-specific fields before copying ref cols
+    row['Location-specific target ID']='';
+    row['Location-specific prep station multiLocation IDs']='';
     copyRef(row, expRow);
     importRows.push(row);
   }
