@@ -299,23 +299,22 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,s
           <input class="adv-input" id="imp-sandbox-menu-guid" placeholder="db442458-3bc0-47d6-86a4-3f89ba066fb5" value="db442458-3bc0-47d6-86a4-3f89ba066fb5">
           <span class="adv-note" style="grid-column:unset">Menu GUID — e.g. Lansdale Clone 2</span>
         </div>
-        <div class="adv-field">
-          <label class="adv-label">MB Menu Group Name</label>
-          <input class="adv-input" id="imp-mb-menu-name" placeholder="MB Menu" value="MB Menu">
-          <span class="adv-note" style="grid-column:unset">Menu group name in the Sandbox</span>
-        </div>
-        <div class="adv-field">
-          <label class="adv-label">Sandbox Menu Name</label>
-          <input class="adv-input" id="imp-clone-menu-name" placeholder="Lansdale Clone 2" value="Lansdale Clone 2">
-          <span class="adv-note" style="grid-column:unset">Name of the target menu — e.g. Lansdale Clone 2</span>
-        </div>
         <div class="adv-note">Pre-filled with Manhattan Bagel Lansdale defaults. Override for other stores or sandbox environments.</div>
       </div>
     </div>
     <button class="run-btn" id="imp-run-btn" onclick="runImport()">Generate Import File</button>
+    <button class="run-btn" id="imp-val-btn" onclick="runValidate()" style="margin-left:10px;background:var(--bg3);color:var(--text);border:1px solid var(--border2);">✓ Validate</button>
     <span class="spinner" id="imp-spin">Building…</span>
     <div id="imp-err"></div>
     <div class="results" id="imp-out"></div>
+    <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:10px;">Next steps after importing</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.8;">
+        <div>1. Upload the generated CSV to the Toast bulk import tool in your <strong style="color:var(--text)">Sandbox</strong> restaurant</div>
+        <div>2. Pull a fresh Sandbox JSON from the API</div>
+        <div>3. Go to the <strong style="color:var(--accent);cursor:pointer;" onclick="switchTab('sync',document.querySelectorAll('.nav-tab')[1])">Sync Checklist</strong> tab and upload Lansdale + the new Sandbox JSON to confirm everything matches</div>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -632,8 +631,6 @@ function computeImport(lData, sData, opts={}) {
         row['Visible to POS']=row['Visible to Kiosk, Toast Order and Pay']=
         row['Visible to Toast Online Ordering, Toast Takeout App']=
         row['Visible to online ordering partners']='TRUE';
-        row['Target ID']=''; row['Owner ID']='';
-        copyRef(row, expLookup[name]);
         importRows.push(row);
       }
       continue;
@@ -659,15 +656,7 @@ function computeImport(lData, sData, opts={}) {
       row['POS Name']=expRow['POS Name']||expRow['POS name']||'';
       row['Kitchen Name']=expRow['Kitchen Name']||expRow['Kitchen name']||'';
       row['Sales category multiLocation ID']=expRow['Sales category multiLocation ID']||'';
-      // Do NOT copy Target ID / Owner ID — those are Lansdale-specific location GUIDs
-      // and will fail validation in the Sandbox restaurant
-      row['Target ID']='';
-      row['Owner ID']='';
     }
-    // Clear all location-specific fields before copying ref cols
-    row['Location-specific target ID']='';
-    row['Location-specific prep station multiLocation IDs']='';
-    copyRef(row, expRow);
     importRows.push(row);
   }
 
@@ -709,6 +698,56 @@ async function runSync() {
   btn.disabled=false; spin.classList.remove('running');
 }
 
+async function runValidate() {
+  const errEl=document.getElementById('imp-err'); errEl.innerHTML='';
+  if (!files['zone-il']||!files['zone-is']) { errEl.innerHTML='<div class="error-msg">Please upload both JSON files.</div>'; return; }
+  const btn=document.getElementById('imp-val-btn');
+  btn.disabled=true; btn.textContent='Checking…';
+  try {
+    const [lData,sData]=await Promise.all([readJSON(files['zone-il']),readJSON(files['zone-is'])]);
+    const impOpts={
+      lansdaleGuid: document.getElementById('imp-lansdale-guid')?.value.trim()||'',
+      sandboxGuid:  document.getElementById('imp-sandbox-menu-guid')?.value.trim()||'',
+    };
+    const lMenu=getMenu(lData,false,impOpts.lansdaleGuid);
+    const sMenu=getMenu(sData,true,impOpts.sandboxGuid);
+    if (!lMenu) { errEl.innerHTML='<div class="error-msg">Could not find Lansdale Otter menu.</div>'; return; }
+    if (!sMenu) { errEl.innerHTML='<div class="error-msg">Could not find Sandbox Clone 2 menu.</div>'; return; }
+
+    // Get item names
+    const lItems={};
+    for (const g of lMenu.menuGroups||[])
+      for (const item of g.menuItems||[])
+        lItems[item.name.trim()] = g.name;
+
+    const sItems=new Set();
+    for (const g of sMenu.menuGroups||[])
+      for (const item of g.menuItems||[])
+        sItems.add(item.name.trim());
+
+    const missing=Object.keys(lItems).filter(n=>!sItems.has(n)).sort();
+    const extra=[...sItems].filter(n=>!lItems[n]).sort();
+
+    const el=document.getElementById('imp-out');
+    if (!missing.length) {
+      el.innerHTML=`<div style="background:rgba(90,170,106,.1);border:1px solid rgba(90,170,106,.3);border-radius:var(--r);padding:16px 20px;">
+        <div style="font-size:15px;font-weight:600;color:var(--green);margin-bottom:4px;">✅ All ${Object.keys(lItems).length} Lansdale items are present in Clone 2</div>
+        ${extra.length?`<div style="font-size:12px;color:var(--text2);margin-top:8px;">${extra.length} extra items in Clone 2 not in Lansdale (remove manually): ${extra.map(n=>`<strong>${esc(n)}</strong>`).join(', ')}</div>`:''}
+      </div>`;
+    } else {
+      let html=`<div style="background:rgba(224,85,85,.1);border:1px solid rgba(224,85,85,.3);border-radius:var(--r);padding:16px 20px;margin-bottom:12px;">
+        <div style="font-size:15px;font-weight:600;color:var(--red);margin-bottom:8px;">✗ ${missing.length} item${missing.length>1?'s':''} missing from Clone 2</div>`;
+      for (const n of missing)
+        html+=`<div style="font-size:13px;padding:3px 0;border-bottom:1px solid rgba(224,85,85,.15)">${esc(n)} <span style="font-size:11px;color:var(--text3)">[${esc(lItems[n])}]</span></div>`;
+      html+=`</div>`;
+      if (extra.length)
+        html+=`<div style="font-size:12px;color:var(--text2);">${extra.length} extra in Clone 2 (remove manually): ${extra.map(n=>`<strong>${esc(n)}</strong>`).join(', ')}</div>`;
+      el.innerHTML=html;
+    }
+  } catch(e) { errEl.innerHTML=`<div class="error-msg">Error: ${e.message}</div>`; }
+  btn.disabled=false; btn.textContent='✓ Validate';
+}
+
 async function runImport() {
   const errEl=document.getElementById('imp-err'); errEl.innerHTML='';
   if (!files['zone-il']||!files['zone-is']) { errEl.innerHTML='<div class="error-msg">Please upload both JSON files.</div>'; return; }
@@ -719,8 +758,6 @@ async function runImport() {
     const impOpts = {
       lansdaleGuid:  document.getElementById('imp-lansdale-guid')?.value.trim()||'',
       sandboxGuid:   document.getElementById('imp-sandbox-menu-guid')?.value.trim()||'',
-      mbMenuName:    document.getElementById('imp-mb-menu-name')?.value.trim()||'MB Menu',
-      cloneMenuName: document.getElementById('imp-clone-menu-name')?.value.trim()||'Lansdale Clone 2',
     };
     const r=computeImport(lData,sData,impOpts);
     if (r.error) errEl.innerHTML=`<div class="error-msg">${r.error}</div>`;
