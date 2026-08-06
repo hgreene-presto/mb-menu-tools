@@ -1,0 +1,70 @@
+name: MB Menu Daily Diff
+
+on:
+  schedule:
+    # 7:00 AM PDT  = 14:00 UTC
+    - cron: '0 14 * * *'
+    # 12:00 PM PDT = 19:00 UTC
+    - cron: '0 19 * * *'
+    # 4:00 PM PDT  = 23:00 UTC
+    - cron: '0 23 * * *'
+  # Allow manual trigger from GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  menu-diff:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout mb-menu-tools repo
+        uses: actions/checkout@v4
+
+      - name: Checkout snapshot repo
+        uses: actions/checkout@v4
+        with:
+          repository: hgreene-presto/mb-menu-snapshots
+          token: ${{ secrets.SNAPSHOT_REPO_PAT }}
+          path: snapshots
+
+      - name: Copy snapshot into working directory
+        run: |
+          if [ -f snapshots/snapshot.json ]; then
+            cp snapshots/snapshot.json snapshot.json
+            echo "Snapshot loaded."
+          else
+            echo "No snapshot found — first run, will create baseline."
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run menu diff
+        env:
+          TOAST_CLIENT_ID: ${{ secrets.TOAST_CLIENT_ID }}
+          TOAST_CLIENT_SECRET: ${{ secrets.TOAST_CLIENT_SECRET }}
+          TOAST_RESTAURANT_GUID: ${{ secrets.TOAST_RESTAURANT_GUID }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python compare.py
+
+      - name: Save updated snapshot back to private repo
+        run: |
+          if [ -f snapshot.json ]; then
+            cp snapshot.json snapshots/snapshot.json
+            cd snapshots
+            git config user.name "MB Menu Bot"
+            git config user.email "mb-menu-bot@presto.com"
+            git add snapshot.json
+            # Only commit if something changed
+            git diff --cached --quiet || git commit -m "Menu snapshot update $(date -u '+%Y-%m-%d %H:%M UTC')"
+            git push
+            echo "Snapshot saved."
+          else
+            echo "No snapshot.json to save."
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.SNAPSHOT_REPO_PAT }}
