@@ -260,17 +260,11 @@ SLACK_MENTIONS = ' '.join([
     '<@U0155GU3G86>',  # Mohan
 ])
 
-def format_slack_message(changes, check_time):
+def format_slack_messages(changes, check_time):
+    """Returns a list of messages to post — splits by change type to stay under Slack's 4000 char limit."""
     now_str = check_time.strftime('%B %-d, %Y at %-I:%M %p PT')
     count = len(changes)
 
-    lines = [
-        f'🍞 *Lansdale Menu Update — {now_str}*',
-        SLACK_MENTIONS,
-        f'*{count} change{"s" if count != 1 else ""} detected on the *Owner / Otter Menu*\n',
-    ]
-
-    # Group by change type for readability
     from collections import defaultdict
     by_type = defaultdict(list)
     for change_type, item, detail in changes:
@@ -284,21 +278,42 @@ def format_slack_message(changes, check_time):
         'Modifier Option Added', 'Modifier Option Removed', 'Modifier Option Name Changed',
     ]
 
+    # Build header message
+    header = '\n'.join([
+        f'🍞 *Lansdale Menu Update — {now_str}*',
+        SLACK_MENTIONS,
+        f'*{count} change{"s" if count != 1 else ""} detected on the *Owner / Otter Menu*',
+        f'<https://hgreene-presto.github.io/mb-menu-tools|View full diff tool>',
+    ])
+
+    messages = [header]
+
+    # Build one chunk per change type, splitting further if a single type is too long
+    SLACK_LIMIT = 3800
+
     for t in type_order:
         if t not in by_type:
             continue
         emoji = TYPE_EMOJI.get(t, '•')
-        lines.append(f'*{emoji} {t}* ({len(by_type[t])})')
+        section_header = f'*{emoji} {t}* ({len(by_type[t])})'
+        lines = [section_header]
+
         for item, detail in by_type[t]:
-            # Highlight REQUIRED and optional in the detail line
             formatted_detail = detail.replace('[REQUIRED]', '*[REQUIRED]*').replace('[optional]', '_[optional]_')
             formatted_detail = formatted_detail.replace('now REQUIRED', '*now REQUIRED*').replace('now optional', '_now optional_')
-            lines.append(f'  • `{item}`' + (f'\n    {formatted_detail}' if formatted_detail else ''))
-        lines.append('')
+            line = f'  • `{item}`' + (f'\n    {formatted_detail}' if formatted_detail else '')
 
-    lines.append(f'_Posted to #menu-update-notification_\n<https://hgreene-presto.github.io/mb-menu-tools|View full diff tool>')
+            # If adding this line would exceed limit, flush current chunk and start new one
+            candidate = '\n'.join(lines + [line])
+            if len(candidate) > SLACK_LIMIT:
+                messages.append('\n'.join(lines))
+                lines = [f'*{emoji} {t} (continued)*', line]
+            else:
+                lines.append(line)
 
-    return '\n'.join(lines)
+        messages.append('\n'.join(lines))
+
+    return messages
 
 def post_to_slack(message):
     resp = requests.post(
@@ -307,7 +322,14 @@ def post_to_slack(message):
         timeout=30,
     )
     resp.raise_for_status()
-    print('Posted to Slack.')
+
+def post_all_to_slack(messages):
+    for i, message in enumerate(messages):
+        post_to_slack(message)
+        print(f'Posted message {i+1}/{len(messages)} to Slack.')
+        if i < len(messages) - 1:
+            import time
+            time.sleep(1)  # small delay between posts to avoid rate limiting
 
 # ── Main ──────────────────────────────────────────────────────────────────
 
@@ -346,8 +368,8 @@ def main():
     print(f'{len(changes)} changes found.')
 
     if changes:
-        message = format_slack_message(changes, check_time_pt)
-        post_to_slack(message)
+        messages = format_slack_messages(changes, check_time_pt)
+        post_all_to_slack(messages)
     else:
         print('Timestamp changed but no menu differences detected. Silent.')
 
