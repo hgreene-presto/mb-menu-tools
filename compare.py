@@ -188,10 +188,13 @@ def compute_diff(prev_data, curr_data):
 
         for mgname in sorted(set(curr_mgs) - set(prev_mgs)):
             opts = [o['name'] for o in curr_mgs[mgname]['options']]
+            req = 'REQUIRED' if curr_mgs[mgname]['required'] == 'REQUIRED' else 'optional'
+            min_max = f" | min:{curr_mgs[mgname]['min']} max:{curr_mgs[mgname]['max']}" if (curr_mgs[mgname]['min'] is not None or curr_mgs[mgname]['max'] is not None) else ''
             changes.append(('Modifier Group Added', iname,
-                f'"{mgname}" | Options: {", ".join(opts)}'))
+                f'"{mgname}" [{req}]{min_max} | Options: {", ".join(opts)}'))
         for mgname in sorted(set(prev_mgs) - set(curr_mgs)):
-            changes.append(('Modifier Group Removed', iname, f'"{mgname}"'))
+            req = 'REQUIRED' if prev_mgs[mgname]['required'] == 'REQUIRED' else 'optional'
+            changes.append(('Modifier Group Removed', iname, f'"{mgname}" [{req}]'))
 
         # Modifier group name string changed (same guid)
         for guid in sorted(set(prev_mgs_by_guid) & set(curr_mgs_by_guid)):
@@ -204,8 +207,10 @@ def compute_diff(prev_data, curr_data):
             pfx = f'"{mgname}"'
 
             if pm['required'] != cm['required']:
+                prev_req = 'REQUIRED' if pm['required'] == 'REQUIRED' else 'optional'
+                curr_req = 'REQUIRED' if cm['required'] == 'REQUIRED' else 'optional'
                 changes.append(('Modifier Required Flag Changed', iname,
-                    f'{pfx} | {pm["required"]} → {cm["required"]}'))
+                    f'{pfx} | was {prev_req} → now {curr_req}'))
             if pm['min'] != cm['min'] or pm['max'] != cm['max']:
                 changes.append(('Modifier Min/Max Changed', iname,
                     f'{pfx} | min: {pm["min"]} → {cm["min"]} | max: {pm["max"]} → {cm["max"]}'))
@@ -246,12 +251,22 @@ TYPE_EMOJI = {
     'Modifier Option Name Changed':  '🔤',
 }
 
+SLACK_MENTIONS = ' '.join([
+    '<@U09AWCWQBGA>',  # Haroon
+    '<@U1F9S04BA>',    # Hillary
+    '<@U0B98MN84H3>',  # Charles
+    '<@U02UCUG5ANN>',  # Mona
+    '<@U049TGW0FKP>',  # Jon
+    '<@U0155GU3G86>',  # Mohan
+])
+
 def format_slack_message(changes, check_time):
     now_str = check_time.strftime('%B %-d, %Y at %-I:%M %p PT')
     count = len(changes)
 
     lines = [
         f'🍞 *Lansdale Menu Update — {now_str}*',
+        SLACK_MENTIONS,
         f'*{count} change{"s" if count != 1 else ""} detected on the *Owner / Otter Menu*\n',
     ]
 
@@ -275,7 +290,10 @@ def format_slack_message(changes, check_time):
         emoji = TYPE_EMOJI.get(t, '•')
         lines.append(f'*{emoji} {t}* ({len(by_type[t])})')
         for item, detail in by_type[t]:
-            lines.append(f'  • `{item}`' + (f'\n    _{detail}_' if detail else ''))
+            # Highlight REQUIRED and optional in the detail line
+            formatted_detail = detail.replace('[REQUIRED]', '*[REQUIRED]*').replace('[optional]', '_[optional]_')
+            formatted_detail = formatted_detail.replace('now REQUIRED', '*now REQUIRED*').replace('now optional', '_now optional_')
+            lines.append(f'  • `{item}`' + (f'\n    {formatted_detail}' if formatted_detail else ''))
         lines.append('')
 
     lines.append(f'_Posted to #menu-update-notification_\n<https://hgreene-presto.github.io/mb-menu-tools|View full diff tool>')
